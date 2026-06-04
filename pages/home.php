@@ -306,3 +306,4 @@ sort($categoryOptions, SORT_STRING);
         }
     </style>
 </div>
+    
