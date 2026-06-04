@@ -25,6 +25,8 @@ html, body {
   background: var(--bg);
   font-family: 'DM Mono', monospace;
   color: var(--text);
+  position: relative;
+  z-index: 0;
 }
 
 /* Notebook ruled-line background */
@@ -41,6 +43,7 @@ body::before {
   );
   opacity: 0.35;
   pointer-events: none;
+  z-index: -1;
 }
 
 /* ---- Typography helpers ---- */
@@ -80,7 +83,8 @@ body::before {
   margin-bottom: 8px;
 }
 
-.form-row input {
+.form-row input,
+.form-row select {
   width: 100%;
   background: var(--surface);
   border: 1px solid var(--border);
@@ -93,8 +97,50 @@ body::before {
   transition: border-color 0.15s;
 }
 
-.form-row input:focus {
+.form-row input:focus,
+.form-row select:focus {
   border-color: var(--accent-light);
+}
+
+.checkbox-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 12px;
+}
+
+.checkbox-row input {
+  width: auto;
+}
+
+.checkbox-row label {
+  margin-bottom: 0;
+  font-size: 11px;
+  text-transform: none;
+  letter-spacing: normal;
+}
+
+.inline-actions {
+  margin-top: 12px;
+}
+
+.btn-secondary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  text-decoration: none;
+  padding: 10px 14px;
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  background: rgba(255, 255, 255, 0.6);
+  color: var(--text);
+  font-size: 11px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.btn-secondary:hover {
+  background: #fff;
 }
 
 /* ---- Primary button ---- */
@@ -168,7 +214,7 @@ body::before {
 
 .side-panel-footer {
   font-size: 10px;
-  opacity: 0.35;
+  opacity: 1;
   letter-spacing: 0.06em;
   text-transform: uppercase;
 }

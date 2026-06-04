@@ -1,9 +1,16 @@
 <?php
 session_start();
-// if (!isset($_SESSION['user'])) { header('Location: index.php'); exit; }
-// $page=$_GET['page'] ?? 'home';
-// $allowed=['home','register','submit','departments','search'];
-// if(!in_array($page,$allowed)) $page='home';
+
+if (!isset($_SESSION['user'])) {
+    header('Location: index.php');
+    exit;
+}
+
+$page = $_GET['page'] ?? 'home';
+$allowed = ['home', 'register', 'submit', 'departments', 'search'];
+if (!in_array($page, $allowed, true)) {
+    $page = 'home';
+}
 ?>
 
 <!DOCTYPE html><html><head><meta charset="UTF-8">
@@ -52,6 +59,15 @@ session_start();
         font-size: 12px;
         color: var(--text-muted);
     }
+
+    .side-panel-footer {
+        color: #ffffff;
+        opacity: 1;
+        font-size: 12px;
+        line-height: 1.6;
+        text-transform: none;
+        letter-spacing: normal;
+    }
     </style>
 </head>
 
@@ -66,17 +82,17 @@ session_start();
                 <h2>Welcome to BluArchive!</h2>
                 <p>Research Collection Web for students, by students.</p>
             </div>
-            <div class="side-panel-footer">Logged in as <?=htmlspecialchars($_SESSION['user'])?></div>
+            <div class="side-panel-footer">Logged in as <?=htmlspecialchars($_SESSION['name'] ?: $_SESSION['user'])?><br>Student #: <?=htmlspecialchars($_SESSION['student_number'] ?? '')?><br>Dept: <?=htmlspecialchars($_SESSION['department'] ?? '')?></div>
         </div>
         <div class="right">
             <div class="topcard card">
                 <div class="user">Dashboard Navigation</div>
                 <div class="nav">
                     <a href="?page=home">Home</a>
-                    <a href="?page=register">Register</a>
                     <a href="?page=submit">Submit</a>
                     <a href="?page=departments">Departments</a>
                     <a href="?page=search">Search</a>
+                    <a href="logout.php">Logout</a>
                 </div>
             </div>
             <div class="content card"><?php include __DIR__.'/pages/'.$page.'.php'; ?></div>

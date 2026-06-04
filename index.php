@@ -1,24 +1,98 @@
 <?php
 session_start();
 
-if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    $username = trim($_POST['username'] ?? '');
-    $password = $_POST['password'] ?? '';
+function getUsers() {
 
-    // don't forget to change this to a .txt file when y'all touch ts
-    $demo_users = [
-        'student'  => 'password123',
-        'admin'    => 'admin2024',
-        'research' => 'arcvhive',
-    ];
+    $users = [];
 
-    if (isset($demo_users[$username]) && $demo_users[$username] === $password) {
-        $_SESSION['user'] = $username;
-        header('Location: dashboard.php');
-        exit;
-    } else {
-        $error = 'Invalid username or password.';
+    if (file_exists("userlist.txt")) {
+
+        $lines = file("userlist.txt", FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES);
+
+        for ($i = 0; $i < count($lines); $i += 5) {
+
+            $users[] = [
+                "username" => $lines[$i],
+                "password" => $lines[$i + 1],
+                "name" => $lines[$i + 2],
+                "student_number" => $lines[$i + 3],
+                "department" => $lines[$i + 4]
+            ];
+        }
     }
+
+    return $users;
+}
+
+function loginUser($user) {
+
+    $_SESSION['user'] = $user['username'];
+    $_SESSION['password'] = $user['password'];
+    $_SESSION['name'] = $user['name'];
+    $_SESSION['student_number'] = $user['student_number'];
+    $_SESSION['department'] = $user['department'];
+}
+
+/* Already logged in */
+if (isset($_SESSION['user'])) {
+    header("Location: dashboard.php");
+    exit();
+}
+
+/* Remember me cookie */
+if (isset($_COOKIE['login_cookie'])) {
+
+    foreach (getUsers() as $user) {
+
+        if ($user['student_number'] == $_COOKIE['login_cookie']) {
+
+            loginUser($user);
+
+            header("Location: dashboard.php");
+            exit();
+        }
+    }
+}
+
+$error = "";
+
+if ($_SERVER["REQUEST_METHOD"] == "POST") {
+
+    $username = $_POST["username"];
+    $password = $_POST["password"];
+
+    foreach (getUsers() as $user) {
+
+        if ($user['username'] == $username &&
+            $user['password'] == $password) {
+
+            loginUser($user);
+
+            if (isset($_POST['remember'])) {
+
+                setcookie(
+                    "login_cookie",
+                    $user['student_number'],
+                    time() + 999999,
+                    "/"
+                );
+
+            } else {
+
+                setcookie(
+                    "login_cookie",
+                    "",
+                    time() - 99999,
+                    "/"
+                );
+            }
+
+            header("Location: dashboard.php");
+            exit();
+        }
+    }
+
+    $error = "Invalid username or password.";
 }
 ?>
 
@@ -132,13 +206,20 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
           <label for="password">Password</label>
           <input type="password" id="password" name="password" placeholder="Password" autocomplete="current-password" required />
         </div>
+        <div class="checkbox-row">
+          <input type="checkbox" id="remember" name="remember" value="1" />
+          <label for="remember">Remember me</label>
+        </div>
         <button type="submit" class="btn-primary">Sign In &rarr;</button>
       </form>
 
+      <div class="inline-actions">
+        <a class="btn-secondary" href="register.php">Register</a>
+      </div>
+
       <div class="demo-hint">
-        <strong>Demo accounts:</strong><br>
-        student / password123<br>
-        admin / admin2024
+        <strong>Registered accounts:</strong><br>
+        Use your saved username and password from the register page.
       </div>
     </div>
   </div>
