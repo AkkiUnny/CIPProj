@@ -82,30 +82,51 @@ function sortFilesByDate(&$fileEntries) {
     });
 }
 
-// filterByDepartment() removes entries that don't match the selected department.
 function filterByDepartment(&$fileEntries, $selectedDepartment) {
+    // only filter if the user selected a specific department
     if ($selectedDepartment !== 'ALL') {
-        $fileEntries = array_values(array_filter($fileEntries, function ($entry) use ($selectedDepartment) {
-            return $entry['department_code'] === $selectedDepartment;
-        }));
+        $matchingEntries = []; // create a clean, empty basket
+        
+        // look through every single file entry
+        foreach ($fileEntries as $entry) {
+            // if the file matches the department, put it in the basket
+            if ($entry['department_code'] === $selectedDepartment) {
+                $matchingEntries[] = $entry;
+            }
+        }
+        
+        // replace the old list with our filtered basket
+        $fileEntries = $matchingEntries;
     }
 }
 
-// filterByCategory() removes entries that don't match the selected category.
 function filterByCategory(&$fileEntries, $selectedCategory) {
+    // only filter if a category was actually chosen
     if ($selectedCategory !== '') {
-        $fileEntries = array_values(array_filter($fileEntries, function ($entry) use ($selectedCategory) {
-            return $entry['category'] === $selectedCategory;
-        }));
+        $matchingEntries = []; // create a clean, empty basket
+        
+        // look through every single file entry
+        foreach ($fileEntries as $entry) {
+            // if the file matches the category, put it in the basket
+            if ($entry['category'] === $selectedCategory) {
+                $matchingEntries[] = $entry;
+            }
+        }
+        
+        // replace the old list with our filtered basket
+        $fileEntries = $matchingEntries;
     }
 }
 
-// filterBySearchTerm() searches title, authors, department, category, and filename.
 function filterBySearchTerm(&$fileEntries, $searchTerm) {
+    // only filter if the user typed something in the search bar
     if ($searchTerm !== '') {
-        $searchTerm = mb_strtolower($searchTerm, 'UTF-8');
-        $fileEntries = array_values(array_filter($fileEntries, function ($entry) use ($searchTerm) {
-            $haystack = mb_strtolower(
+        $searchFor = mb_strtolower($searchTerm, 'UTF-8');
+        $matchingEntries = []; // create a clean, empty basket
+        
+        foreach ($fileEntries as $entry) {
+            // combine all data fields into one single string to scan through
+            $textToScan = mb_strtolower(
                 $entry['name'] . ' ' . 
                 $entry['authors'] . ' ' . 
                 $entry['department'] . ' ' . 
@@ -113,8 +134,15 @@ function filterBySearchTerm(&$fileEntries, $searchTerm) {
                 $entry['file'], 
                 'UTF-8'
             );
-            return str_contains($haystack, $searchTerm);
-        }));
+            
+            // if the search term exists inside our text pool, put it in the basket
+            if (str_contains($textToScan, $searchFor)) {
+                $matchingEntries[] = $entry;
+            }
+        }
+        
+        // replace the old list with our filtered basket
+        $fileEntries = $matchingEntries;
     }
 }
 
