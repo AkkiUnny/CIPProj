@@ -2,9 +2,10 @@
 
 $selectedDepartment = $_GET['dept'] ?? 'ALL';
 $searchTerm = trim($_GET['search'] ?? '');
-$selectedCategory = $_GET['category'] ?? 'All';
+$selectedCategory = $_GET['category'] ?? '';
 
 $departmentOptions = ['ALL', 'CBA', 'CENG', 'CCSS', 'CAS', 'CFAD', 'LAW', 'DENT', 'GRAD'];
+$categoryOptions = [];
 
 // readMeta() loads metadata from a .meta file for a given document.
 function readMeta($filePath) {
@@ -15,7 +16,8 @@ function readMeta($filePath) {
         "Authors" => "",
         "Department" => "",
         "Adviser" => "",
-        "Year" => ""
+        "Year" => "",
+        "Category" => ""
     ];
 
     // The metadata file uses the uploaded filename plus .meta extension.
@@ -56,52 +58,55 @@ if (is_dir($targetDir)) {
             $title = $meta['Title'] ?: $item;
             $authors = $meta['Authors'] ?: 'Unknown';
 
-            // gather all available categories for the dropdown menu
-            if ($category !== '') {
-                $categoryOptions[$category] = true;
-            }
+        $meta = readMeta($path);
+        $departmentCode = $meta['Department'] ?: 'Unknown';
+        $categoryValue = $meta['Category'] ?: 'Research';
 
-            // check department filter
-            if ($selectedDepartment !== 'ALL' && strtolower($deptCode) !== strtolower($selectedDepartment)) {
-                continue; 
-            }
-
-            // check category filter
-            if ($selectedCategory !== 'All' && strtolower($category) !== strtolower($selectedCategory)) {
-                continue;
-            }
-
-            // check search bar filter
-            if ($searchTerm !== '') {
-                $searchFor = strtolower($searchTerm);
-                $textToSearch = strtolower($title . ' ' . $authors . ' ' . $category);
-                if (!str_contains($textToSearch, $searchFor)) {
-                    continue; 
-                }
-            }
-
-            // 4save matching files into our array
-            $fileEntries[] = [
-                'name' => $title,
-                'authors' => $authors,
-                'department' => $deptCode,
-                'department_code' => $deptCode,
-                'category' => $category,
-                'file' => $item,
-                'uploaded' => filemtime($path),
-            ];
+        // Track category options dynamically so the filter dropdown has valid choices.
+        if (!in_array($categoryValue, $categoryOptions, true)) {
+            $categoryOptions[] = $categoryValue;
         }
+
+        $fileEntries[] = [
+            'name' => $meta['Title'] ?: $item,
+            'authors' => $meta['Authors'] ?: 'Unknown',
+            'department' => $departmentCode,
+            'department_code' => $departmentCode,
+            'category' => $categoryValue,
+            'file' => $item,
+            'uploaded' => filemtime($path),
+        ];
     }
 
     // 5. sort the files so newest uploads appear first
     usort($fileEntries, function ($a, $b) {
         return $b['uploaded'] <=> $a['uploaded'];
     });
+
+    if ($selectedDepartment !== 'ALL') {
+        $fileEntries = array_values(array_filter($fileEntries, function ($entry) use ($selectedDepartment) {
+            return $entry['department_code'] === $selectedDepartment;
+        }));
+    }
+
+    if ($selectedCategory !== '') {
+        $fileEntries = array_values(array_filter($fileEntries, function ($entry) use ($selectedCategory) {
+            return $entry['category'] === $selectedCategory;
+        }));
+    }
+
+    if ($searchTerm !== '') {
+        $searchTerm = mb_strtolower($searchTerm, 'UTF-8');
+        $fileEntries = array_values(array_filter($fileEntries, function ($entry) use ($searchTerm) {
+            $haystack = mb_strtolower($entry['name'] . ' ' . $entry['authors'] . ' ' . $entry['department'] . ' ' . $entry['category'] . ' ' . $entry['file'], 'UTF-8');
+            return str_contains($haystack, $searchTerm);
+        }));
+    }
 }
 
-// sort the unique dropdown categories alphabetically
-ksort($categoryOptions);
-$categoryOptions = array_keys($categoryOptions);
+$categoryOptions = array_unique($categoryOptions);
+sort($categoryOptions, SORT_STRING);
+
 ?>
 
 <div class="panel">
@@ -120,7 +125,7 @@ $categoryOptions = array_keys($categoryOptions);
         <input type="hidden" name="dept" value="<?= htmlspecialchars($selectedDepartment) ?>" />
         <input class="dept-search" type="text" name="search" value="<?= htmlspecialchars($searchTerm) ?>" placeholder="Search title, author, or category" />
         <select class="dept-filter" name="category">
-            <option value="All" <?= $selectedCategory === 'All' ? 'selected' : '' ?>>All categories</option>
+            <option value="">All</option>
             <?php foreach ($categoryOptions as $category): ?>
                 <option value="<?= htmlspecialchars($category) ?>" <?= $selectedCategory === $category ? 'selected' : '' ?>><?= htmlspecialchars($category) ?></option>
             <?php endforeach; ?>
@@ -128,8 +133,8 @@ $categoryOptions = array_keys($categoryOptions);
         <button class="dept-button" type="submit">Filter</button>
     </form>
 
-    <?php if ($searchTerm !== '' || $selectedCategory !== 'All'): ?>
-        <p class="dept-note">Active filters: <?= htmlspecialchars(trim(($searchTerm !== '' ? 'Search: ' . $searchTerm : '') . ($selectedCategory !== 'All' ? ' Category: ' . $selectedCategory : ''), ' ')) ?></p>
+    <?php if ($searchTerm !== '' || $selectedCategory !== ''): ?>
+        <p class="dept-note">Active filters: <?= htmlspecialchars(trim(($searchTerm !== '' ? 'Search: ' . $searchTerm : '') . ($selectedCategory !== '' ? ' Category: ' . $selectedCategory : ''), ' ')) ?></p>
     <?php endif; ?>
 
     <?php if (!empty($fileEntries)): ?>
