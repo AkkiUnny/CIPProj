@@ -24,17 +24,52 @@
 
                 }
 
-    if (isset($_POST['Upload'])) {
-    uploadfile();
-    }
+    
 ?>
 <div class="panel">
     <div class="panel-title">Submit Research Paper</div>
     <p>Upload yo shie</p>
-    <form align="center" action="" method="post" enctype="multipart/form-data">
+    <form action="" method="post" enctype="multipart/form-data">
+        <input type="text" name="TitleTXT" placeholder="Title of Research Paper">
+        <br>
+
+        <input type="text" name="AuthorsTXT" placeholder="Author(s)">
+        <br>
+
+        <input type="text" name="DepartmentTXT" placeholder="Department">
+        <br>
+
+        <input type="text" name="AdviserTXT" placeholder="Research Adviser">
+        <br>
+
+        <input type="text" name="KeywordsTXT" placeholder="Keywords (comma separated)">
+        <br>
+
+        <input type="number" name="ReleaseTXT" placeholder="Publication Year" min="1900" max="2100">
+        <br>
+
+        <select name="FormatTXT">
+            <option value="">Select Format</option>
+            <option value="PDF">PDF</option>
+            <option value="DOCX">DOCX</option>
+        </select>
+        <br>
+
+        <textarea name="AbstractTXT" placeholder="Abstract" rows="5" cols="40"></textarea>
+        <br>
+
+        <input type="text" name="CourseTXT" placeholder="Course / Program">
+        <br>
+
+        <input type="text" name="CategoryTXT" placeholder="Research Category">
         <br>
         <input type="file" name="docFile">
         <br>
         <input type="submit" name="Upload" value="Upload">
     </form>
 </div>
+<?php
+    if(isset($_POST['Upload'])){
+        uploadfile();
+    }
+?>

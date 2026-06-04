@@ -14,8 +14,8 @@ if (is_dir($targetDir)) {
 ?>
 
 <div class="panel">
-    <div class="panel-title">Welcome</div>
-    <p>Banana</p>
+    <div class="panel-title">Welcome to Blue Archive</div>
+    <p>Recent</p>
 
     <?php if (!empty($files)): ?>
         <ul class="file-list">
