@@ -46,7 +46,7 @@ if (is_dir($targetDir)) {
 ?>
 
 <div class="panel">
-    <div class="panel-title">Welcome to BLUArchive</div>
+    <div class="panel-title">Welcome to the Library</div>
     <p>Recent</p>
 
     <?php if (!empty($files)): ?>
