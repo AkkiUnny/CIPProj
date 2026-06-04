@@ -1,7 +1,9 @@
 <?php
 
+// readMeta() loads metadata from a .meta file for a given document.
 function readMeta($filePath) {
 
+    // Default metadata values if no .meta file exists.
     $meta = [
         "Title" => basename($filePath),
         "Authors" => "",
@@ -10,11 +12,13 @@ function readMeta($filePath) {
         "Year" => ""
     ];
 
+    // The metadata file uses the uploaded filename plus .meta extension.
     $metaFile = $filePath . ".meta";
 
     if (file_exists($metaFile)) {
         $lines = file($metaFile, FILE_IGNORE_NEW_LINES);
 
+        // Parse each line in the form key=value.
         foreach ($lines as $line) {
             [$key, $value] = explode("=", $line, 2);
             $meta[$key] = $value;
@@ -24,31 +28,34 @@ function readMeta($filePath) {
     return $meta;
 }
 
+// Build the list of uploaded files from the FileFolder directory.
 $targetDir = dirname(__DIR__) . '/FileFolder/';
 $fileEntries = [];
 if (is_dir($targetDir)) {
     foreach (scandir($targetDir) as $item) {
         if ($item === '.' || $item === '..') {
-            continue;
+            continue; // skip current / parent directory entries
         }
 
         if (str_ends_with($item, '.meta')) {
-            continue;
+            continue; // skip metadata files themselves
         }
 
         $path = $targetDir . $item;
         if (!is_file($path)) {
-            continue;
+            continue; // skip directories or invalid entries
         }
 
         $meta = readMeta($path);
         $fileEntries[] = [
             'name' => $meta['Title'] ?: $item,
+            'department' => $meta['Department'] ?: 'Unknown',
             'file' => $item,
             'uploaded' => filemtime($path),
         ];
     }
 
+    // Sort files newest first by upload timestamp.
     usort($fileEntries, function ($a, $b) {
         return $b['uploaded'] <=> $a['uploaded'];
     });
@@ -61,10 +68,12 @@ if (is_dir($targetDir)) {
     <!-- <p>Recent uploads</p> -->
 
     <?php if (!empty($fileEntries)): ?>
+        <!-- Table shows uploaded research files, department, upload date, and download link -->
         <table class="file-table">
             <thead>
                 <tr>
                     <th>Research name</th>
+                    <th>Department</th>
                     <th>Date of upload</th>
                     <th>Download</th>
                 </tr>
@@ -73,6 +82,7 @@ if (is_dir($targetDir)) {
                 <?php foreach ($fileEntries as $entry): ?>
                     <tr>
                         <td><a href="../FileFolder/<?= urlencode($entry['file']) ?>" download="<?= htmlspecialchars($entry['file']) ?>"><?= htmlspecialchars($entry['name']) ?></a></td>
+                        <td><?= htmlspecialchars($entry['department']) ?></td>
                         <td><?= date('F j, Y, g:i A', $entry['uploaded']) ?></td>
                         <td>
                             <a class="download-btn" href="../FileFolder/<?= urlencode($entry['file']) ?>" download="<?= htmlspecialchars($entry['file']) ?>">Download</a>
