@@ -3,7 +3,7 @@
 function readMeta($filePath) {
 
     $meta = [
-        "Title" => $filePath,
+        "Title" => basename($filePath),
         "Authors" => "",
         "Department" => "",
         "Adviser" => "",
@@ -25,39 +25,100 @@ function readMeta($filePath) {
 }
 
 $targetDir = dirname(__DIR__) . '/FileFolder/';
-$files = [];
+$fileEntries = [];
 if (is_dir($targetDir)) {
     foreach (scandir($targetDir) as $item) {
+        if ($item === '.' || $item === '..') {
+            continue;
+        }
 
-    if ($item === '.' || $item === '..') {
-        continue;
+        if (str_ends_with($item, '.meta')) {
+            continue;
+        }
+
+        $path = $targetDir . $item;
+        if (!is_file($path)) {
+            continue;
+        }
+
+        $meta = readMeta($path);
+        $fileEntries[] = [
+            'name' => $meta['Title'] ?: $item,
+            'file' => $item,
+            'uploaded' => filemtime($path),
+        ];
     }
 
-    if (str_ends_with($item, '.meta')) {
-        continue;
-    }
-
-    if (is_file($targetDir . $item)) {
-        $files[] = $item;
-    }
-}
+    usort($fileEntries, function ($a, $b) {
+        return $b['uploaded'] <=> $a['uploaded'];
+    });
 }
 
 ?>
 
 <div class="panel">
     <div class="panel-title">Welcome to the Library</div>
-    <p>Recent</p>
+    <p>Recent uploads</p>
 
-    <?php if (!empty($files)): ?>
-        <ul class="file-list">
-            <?php foreach ($files as $file): ?>
-                <li><a href="../FileFolder/<?= urlencode($file) ?>"><?= htmlspecialchars($file) ?></a></li>
-            <?php endforeach; ?>
-        </ul>
+    <?php if (!empty($fileEntries)): ?>
+        <table class="file-table">
+            <thead>
+                <tr>
+                    <th>Research name</th>
+                    <th>Date of upload</th>
+                </tr>
+            </thead>
+            <tbody>
+                <?php foreach ($fileEntries as $entry): ?>
+                    <tr>
+                        <td><a href="../FileFolder/<?= urlencode($entry['file']) ?>"><?= htmlspecialchars($entry['name']) ?></a></td>
+                        <td><?= date('F j, Y, g:i A', $entry['uploaded']) ?></td>
+                    </tr>
+                <?php endforeach; ?>
+            </tbody>
+        </table>
     <?php else: ?>
         <p>No files found in FileFolder.</p>
     <?php endif; ?>
 
-    <!-- <div class="tenor-gif-embed" data-postid="8741534806163341101" data-share-method="host" data-aspect-ratio="1.55245" data-width="100%"><a href="https://tenor.com/view/spinning-banana-banana-donkey-kong-gif-8741534806163341101">Spinning Banana Donkey Kong Sticker</a>from <a href="https://tenor.com/search/spinning+banana-stickers">Spinning Banana Stickers</a></div> <script type="text/javascript" async src="https://tenor.com/embed.js"></script> -->
+    <style>
+        .file-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 18px;
+            background: rgba(255, 255, 255, 0.75);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            overflow: hidden;
+        }
+
+        .file-table th,
+        .file-table td {
+            padding: 14px 16px;
+            text-align: left;
+            border-bottom: 1px solid rgba(0, 0, 0, 0.08);
+            font-size: 13px;
+        }
+
+        .file-table th {
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            font-size: 11px;
+            color: var(--text-muted);
+            background: rgba(255, 255, 255, 0.95);
+        }
+
+        .file-table tr:hover {
+            background: rgba(16, 112, 168, 0.05);
+        }
+
+        .file-table a {
+            color: var(--accent);
+            text-decoration: none;
+        }
+
+        .file-table a:hover {
+            text-decoration: underline;
+        }
+    </style>
 </div>
