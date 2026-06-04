@@ -19,7 +19,7 @@
             // When the file upload succeeds, create a metadata file next to it.
             $metaFile = $destFolder . ".meta";
 
-            // Build the metadata text from the submitted form fields.
+            // Build the mssetadata text from the submitted form fields.
             // These values are later read by home.php's readMeta() function.
             $metadata =
                 "Title=" . $_POST['TitleTXT'] . "\n" .
