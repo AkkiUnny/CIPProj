@@ -4,32 +4,34 @@ $selectedDepartment = $_GET['dept'] ?? 'ALL';
 $searchTerm = trim($_GET['search'] ?? '');
 $selectedCategory = $_GET['category'] ?? 'All';
 
-$departmentOptions = ['ALL', 'CBA', 'CENG', 'CCSS', 'CAS', 'CFAD', 'LAW', 'DENT', 'GRAD'];
+$departmentOptions = [
+    'ALL',
+    'CBA',
+    'CENG',
+    'CCSS',
+    'CAS',
+    'CFAD',
+    'LAW',
+    'DENT',
+    'GRAD',
+];
 
-// readMeta() loads metadata from a .meta file for a given document.
-// It is called for each uploaded file in FileFolder and returns an associative array.
 function readMeta($filePath) {
-
-    // Default metadata values if the matching .meta file is missing.
-    // This ensures the table still displays something meaningful.
     $meta = [
-        "Title" => basename($filePath),
-        "Authors" => "",
-        "Department" => "",
-        "Adviser" => "",
-        "Year" => ""
+        'Title' => basename($filePath),
+        'Authors' => '',
+        'Department' => '',
+        'Category' => '',
+        'Year' => ''
     ];
 
-    // The metadata file uses the uploaded filename plus .meta extension.
-    $metaFile = $filePath . ".meta";
+    $metaFile = $filePath . '.meta';
 
     if (file_exists($metaFile)) {
         $lines = file($metaFile, FILE_IGNORE_NEW_LINES);
 
-        // Parse each line in the form key=value.
-        // This converts the .meta text file into the $meta associative array.
         foreach ($lines as $line) {
-            [$key, $value] = explode("=", $line, 2);
+            [$key, $value] = explode('=', $line, 2);
             $meta[$key] = $value;
         }
     }
@@ -37,23 +39,18 @@ function readMeta($filePath) {
     return $meta;
 }
 
-// Build the list of uploaded files from the FileFolder directory.
-// The page uses $fileEntries later in the HTML table.
 $targetDir = dirname(__DIR__) . '/FileFolder/';
 $fileEntries = [];
+
 if (is_dir($targetDir)) {
     foreach (scandir($targetDir) as $item) {
-        if ($item === '.' || $item === '..') {
-            continue; // skip current / parent directory entries
-        }
-
-        if (str_ends_with($item, '.meta')) {
-            continue; // skip metadata files themselves
+        if ($item === '.' || $item === '..' || str_ends_with($item, '.meta')) {
+            continue;
         }
 
         $path = $targetDir . $item;
         if (!is_file($path)) {
-            continue; // skip directories or invalid entries
+            continue;
         }
 
         $meta = readMeta($path);
@@ -69,39 +66,60 @@ if (is_dir($targetDir)) {
         ];
     }
 
-    // Sort files newest first by upload timestamp.
-    // This uses filemtime() and the anonymous function below.
     usort($fileEntries, function ($a, $b) {
-        // Compare upload timestamps to order most recent first.
         return $b['uploaded'] <=> $a['uploaded'];
     });
-
-    if ($query !== '') {
-        $query = mb_strtolower($query, 'UTF-8');
-        $fileEntries = array_values(array_filter($fileEntries, function ($entry) use ($query) {
-            $haystack = mb_strtolower($entry['name'] . ' ' . $entry['department'] . ' ' . $entry['file'], 'UTF-8');
-            return str_contains($haystack, $query);
-        }));
-    }
 }
-ksort($categoryOptions);
-$categoryOptions = array_keys($categoryOptions);
+
+$allEntries = $fileEntries;
+
+if ($selectedDepartment !== 'ALL') {
+    $fileEntries = array_values(array_filter($allEntries, function ($entry) use ($selectedDepartment) {
+        return strcasecmp($entry['department_code'], $selectedDepartment) === 0;
+    }));
+} else {
+    $fileEntries = $allEntries;
+}
+
+if ($searchTerm !== '') {
+    $needle = mb_strtolower($searchTerm, 'UTF-8');
+    $fileEntries = array_values(array_filter($fileEntries, function ($entry) use ($needle) {
+        $haystack = mb_strtolower($entry['name'] . ' ' . $entry['authors'] . ' ' . $entry['category'], 'UTF-8');
+        return str_contains($haystack, $needle);
+    }));
+}
+
+if ($selectedCategory !== 'All') {
+    $fileEntries = array_values(array_filter($fileEntries, function ($entry) use ($selectedCategory) {
+        return strcasecmp($entry['category'], $selectedCategory) === 0;
+    }));
+}
+
+$categoryOptions = [
+    'Case study',
+    'Survey',
+    'Literature review',
+    'Experimental',
+    'Theoretical',
+    'Design project',
+];
 
 ?>
 
 <div class="panel">
-    <div class="panel-title">Library</div>
-    <p>Browse research papers by department with category filtering.</p>
+    <div class="panel-title">Departments</div>
+    <p>Browse research papers by department.</p>
 
     <div class="dept-tabs">
         <?php foreach ($departmentOptions as $code): ?>
-            <a class="dept-tab <?= $selectedDepartment === $code ? 'active' : '' ?>"
-               href="dashboard.php?page=home&dept=<?= urlencode($code) ?>&search=<?= urlencode($searchTerm) ?>&category=<?= urlencode($selectedCategory) ?>"><?= htmlspecialchars($code) ?></a>
+            <a class="dept-tab <?= $selectedDepartment === $code ? 'active' : '' ?>" href="dashboard.php?page=departments&dept=<?= urlencode($code) ?>"><?= htmlspecialchars($code) ?></a>
         <?php endforeach; ?>
     </div>
 
+    <p class="dept-note">Showing research papers for <strong><?= htmlspecialchars($selectedDepartment) ?></strong>.</p>
+
     <form class="dept-controls" method="get" action="dashboard.php">
-        <input type="hidden" name="page" value="home" />
+        <input type="hidden" name="page" value="departments" />
         <input type="hidden" name="dept" value="<?= htmlspecialchars($selectedDepartment) ?>" />
         <input class="dept-search" type="text" name="search" value="<?= htmlspecialchars($searchTerm) ?>" placeholder="Search title, author, or category" />
         <select class="dept-filter" name="category">
@@ -118,7 +136,6 @@ $categoryOptions = array_keys($categoryOptions);
     <?php endif; ?>
 
     <?php if (!empty($fileEntries)): ?>
-        <!-- Table shows uploaded research files, department, upload date, and download link -->
         <table class="file-table">
             <thead>
                 <tr>
@@ -138,15 +155,13 @@ $categoryOptions = array_keys($categoryOptions);
                         <td><?= htmlspecialchars($entry['department']) ?></td>
                         <td><?= htmlspecialchars($entry['category']) ?></td>
                         <td><?= date('F j, Y, g:i A', $entry['uploaded']) ?></td>
-                        <td>
-                            <a class="download-btn" href="../FileFolder/<?= urlencode($entry['file']) ?>" download="<?= htmlspecialchars($entry['file']) ?>">Download</a>
-                        </td>
+                        <td><a class="download-btn" href="../FileFolder/<?= urlencode($entry['file']) ?>" download="<?= htmlspecialchars($entry['file']) ?>">Download</a></td>
                     </tr>
                 <?php endforeach; ?>
             </tbody>
         </table>
     <?php else: ?>
-        <p>No files found in FileFolder.</p>
+        <p>No research papers found for this department.</p>
     <?php endif; ?>
 
     <style>
@@ -231,10 +246,8 @@ $categoryOptions = array_keys($categoryOptions);
         .file-table {
             width: 100%;
             border-collapse: collapse;
-            margin-top: 18px;
             background: rgba(255, 255, 255, 0.75);
             border: 1px solid var(--border);
-            border-radius: 8px;
             overflow: hidden;
         }
 
