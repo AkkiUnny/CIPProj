@@ -1,9 +1,9 @@
 <?php
 session_start();
-// if (!isset($_SESSION['user'])) { header('Location: index.php'); exit; }
-// $page=$_GET['page'] ?? 'home';
-// $allowed=['home','register','submit','departments','search'];
-// if(!in_array($page,$allowed)) $page='home';
+if (!isset($_SESSION['user'])) { header('Location: index.php'); exit; }
+$page=$_GET['page'] ?? 'home';
+$allowed=['home','register','submit','departments','search'];
+if(!in_array($page,$allowed)) $page='home';
 ?>
 
 <!DOCTYPE html><html><head><meta charset="UTF-8">
