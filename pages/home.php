@@ -3,9 +3,11 @@
 $query = trim($_GET['q'] ?? '');
 
 // readMeta() loads metadata from a .meta file for a given document.
+// It is called for each uploaded file in FileFolder and returns an associative array.
 function readMeta($filePath) {
 
-    // Default metadata values if no .meta file exists.
+    // Default metadata values if the matching .meta file is missing.
+    // This ensures the table still displays something meaningful.
     $meta = [
         "Title" => basename($filePath),
         "Authors" => "",
@@ -21,6 +23,7 @@ function readMeta($filePath) {
         $lines = file($metaFile, FILE_IGNORE_NEW_LINES);
 
         // Parse each line in the form key=value.
+        // This converts the .meta text file into the $meta associative array.
         foreach ($lines as $line) {
             [$key, $value] = explode("=", $line, 2);
             $meta[$key] = $value;
@@ -31,6 +34,7 @@ function readMeta($filePath) {
 }
 
 // Build the list of uploaded files from the FileFolder directory.
+// The page uses $fileEntries later in the HTML table.
 $targetDir = dirname(__DIR__) . '/FileFolder/';
 $fileEntries = [];
 if (is_dir($targetDir)) {
@@ -60,12 +64,18 @@ if (is_dir($targetDir)) {
     }
 
     // Sort files newest first by upload timestamp.
+    // This uses filemtime() and the anonymous function below.
     usort($fileEntries, function ($a, $b) {
+        // Compare upload timestamps to order most recent first.
         return $b['uploaded'] <=> $a['uploaded'];
     });
 
     if ($query !== '') {
+        // Normalize the search query so the filter is case-insensitive.
         $query = mb_strtolower($query, 'UTF-8');
+
+        // Filter $fileEntries by title, department, or file name.
+        // The anonymous function captures $query from the outer scope using use ($query).
         $fileEntries = array_values(array_filter($fileEntries, function ($entry) use ($query) {
             $haystack = mb_strtolower($entry['name'] . ' ' . $entry['department'] . ' ' . $entry['file'], 'UTF-8');
             return str_contains($haystack, $query);
