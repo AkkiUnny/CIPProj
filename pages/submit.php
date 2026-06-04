@@ -1,47 +1,50 @@
 <?php
+    // uploadfile() handles the submitted research paper upload and saves metadata.
     function uploadfile(){
-                    $targetDir = "FileFolder/";
+        // Path to the folder where uploaded documents are stored.
+        $targetDir = "FileFolder/";
                     
-                    // Combine the directory path with just the original filename
-                    $destFolder = $targetDir . basename($_FILES['docFile']['name']);
-                    $tempfile = $_FILES['docFile']['tmp_name'];
+        // Use the original filename and combine it with the upload folder path.
+        $destFolder = $targetDir . basename($_FILES['docFile']['name']);
 
-                    // echo $destFolder . "<br>";
-                    // echo $tempfile . "<br>";
-                
-                    if(move_uploaded_file($tempfile, $destFolder)){
+        // Temporary location of the uploaded file.
+        $tempfile = $_FILES['docFile']['tmp_name'];
 
-                        // Create metadata file
-                        $metaFile = $destFolder . ".meta";
+        // Move the uploaded file from the temporary folder into FileFolder.
+        if(move_uploaded_file($tempfile, $destFolder)){
 
-                        $metadata =
-                            "Title=" . $_POST['TitleTXT'] . "\n" .
-                            "Authors=" . $_POST['AuthorsTXT'] . "\n" .
-                            "Department=" . $_POST['DepartmentTXT'] . "\n" .
-                            "Adviser=" . $_POST['AdviserTXT'] . "\n" .
-                            "Keywords=" . $_POST['KeywordsTXT'] . "\n" .
-                            "Year=" . $_POST['ReleaseTXT'] . "\n" .
-                            "Course=" . $_POST['CourseTXT'] . "\n" .
-                            "Category=" . $_POST['CategoryTXT'] . "\n";
+            // When the file upload succeeds, create a metadata file next to it.
+            $metaFile = $destFolder . ".meta";
 
-                        file_put_contents($metaFile, $metadata);
+            // Build the metadata text from the submitted form fields.
+            $metadata =
+                "Title=" . $_POST['TitleTXT'] . "\n" .
+                "Authors=" . $_POST['AuthorsTXT'] . "\n" .
+                "Department=" . $_POST['DepartmentTXT'] . "\n" .
+                "Adviser=" . $_POST['AdviserTXT'] . "\n" .
+                "Keywords=" . $_POST['KeywordsTXT'] . "\n" .
+                "Year=" . $_POST['ReleaseTXT'] . "\n" .
+                "Course=" . $_POST['CourseTXT'] . "\n" .
+                "Category=" . $_POST['CategoryTXT'] . "\n";
 
-                        echo "Your paper has been uploaded successfully!";
+            // Save the metadata string into a .meta file alongside the uploaded document.
+            file_put_contents($metaFile, $metadata);
 
-                    } else {
+            echo "Your paper has been uploaded successfully!";
 
-                        echo "Trying to upload your paper again. Make sure the file is not too large and is in an accepted format.";
+        } else {
+            // If file upload fails, show a user-friendly message.
+            echo "Trying to upload your paper again. Make sure the file is not too large and is in an accepted format.";
+        }
 
-                    }
+        // This block scans the upload directory for debugging, but output is commented out.
+        $targetDir = "FileFolder/";
+        $dirlist = scandir($targetDir, 1); 
 
-                    $targetDir = "FileFolder/";
-                    $dirlist = scandir($targetDir, 1); 
-
-                    // foreach($dirlist as $listing){
-                    //     echo "<a href='FileFolder/" . urlencode($listing) . "'> {$listing} </a><br> ";
-                    // }
-
-                }
+        // foreach($dirlist as $listing){
+        //     echo "<a href='FileFolder/" . urlencode($listing) . "'> {$listing} </a><br> ";
+        // }
+    }
 
     
 
@@ -50,6 +53,7 @@
 <div class="panel">
     <div class="panel-title">Submit Research Paper</div>
     <p>Upload your paper with all metadata attached.</p>
+    <!-- Form collects paper metadata and the file itself for upload -->
     <form action="" method="post" enctype="multipart/form-data">
         <div class="submit-grid">
             <label>
