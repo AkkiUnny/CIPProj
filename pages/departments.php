@@ -71,29 +71,35 @@ if (is_dir($targetDir)) {
     });
 }
 
-$allEntries = $fileEntries;
+//SEARCH
+$filtered = [];
 
-if ($selectedDepartment !== 'ALL') {
-    $fileEntries = array_values(array_filter($allEntries, function ($entry) use ($selectedDepartment) {
-        return strcasecmp($entry['department_code'], $selectedDepartment) === 0;
-    }));
-} else {
-    $fileEntries = $allEntries;
+for ($i = 0; $i < count($fileEntries); $i++) {
+
+    $entry = $fileEntries[$i];
+
+    $department_ok = ($selectedDepartment == 'ALL' || $entry['department_code'] == $selectedDepartment);
+
+    $category_ok = ($selectedCategory == 'All' || $entry['category'] == $selectedCategory);
+
+    $search_ok = true;
+
+    if ($searchTerm !== '') {
+
+        $search_text = strtolower($entry['name'] . ' ' . $entry['authors'] . ' ' . $entry['category']);
+        $search_input = strtolower($searchTerm);
+
+        if (strpos($search_text, $search_input) === false) {
+            $search_ok = false;
+        }
+    }
+
+    if ($department_ok && $category_ok && $search_ok) {
+        $filtered[] = $entry;
+    }
 }
 
-if ($searchTerm !== '') {
-    $needle = mb_strtolower($searchTerm, 'UTF-8');
-    $fileEntries = array_values(array_filter($fileEntries, function ($entry) use ($needle) {
-        $haystack = mb_strtolower($entry['name'] . ' ' . $entry['authors'] . ' ' . $entry['category'], 'UTF-8');
-        return str_contains($haystack, $needle);
-    }));
-}
-
-if ($selectedCategory !== 'All') {
-    $fileEntries = array_values(array_filter($fileEntries, function ($entry) use ($selectedCategory) {
-        return strcasecmp($entry['category'], $selectedCategory) === 0;
-    }));
-}
+$fileEntries = $filtered;
 
 $categoryOptions = [
     'Case study',
