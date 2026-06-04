@@ -58,7 +58,7 @@ if (is_dir($targetDir)) {
 
 <div class="panel">
     <div class="panel-title">Welcome to the Library</div>
-    <p>Recent uploads</p>
+    <!-- <p>Recent uploads</p> -->
 
     <?php if (!empty($fileEntries)): ?>
         <table class="file-table">
@@ -66,13 +66,17 @@ if (is_dir($targetDir)) {
                 <tr>
                     <th>Research name</th>
                     <th>Date of upload</th>
+                    <th>Download</th>
                 </tr>
             </thead>
             <tbody>
                 <?php foreach ($fileEntries as $entry): ?>
                     <tr>
-                        <td><a href="../FileFolder/<?= urlencode($entry['file']) ?>"><?= htmlspecialchars($entry['name']) ?></a></td>
+                        <td><a href="../FileFolder/<?= urlencode($entry['file']) ?>" download="<?= htmlspecialchars($entry['file']) ?>"><?= htmlspecialchars($entry['name']) ?></a></td>
                         <td><?= date('F j, Y, g:i A', $entry['uploaded']) ?></td>
+                        <td>
+                            <a class="download-btn" href="../FileFolder/<?= urlencode($entry['file']) ?>" download="<?= htmlspecialchars($entry['file']) ?>">Download</a>
+                        </td>
                     </tr>
                 <?php endforeach; ?>
             </tbody>
@@ -119,6 +123,24 @@ if (is_dir($targetDir)) {
 
         .file-table a:hover {
             text-decoration: underline;
+        }
+
+        .download-btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            padding: 8px 12px;
+            border-radius: 4px;
+            border: none;
+            background: rgba(16, 112, 168, 0.1);
+            color: var(--accent);
+            font-size: 12px;
+            text-decoration: none;
+            transition: background 0.15s;
+        }
+
+        .download-btn:hover {
+            background: rgba(16, 112, 168, 0.18);
         }
     </style>
 </div>
