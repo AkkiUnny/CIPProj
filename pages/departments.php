@@ -156,12 +156,12 @@ $categoryOptions = [
             <tbody>
                 <?php foreach ($fileEntries as $entry): ?>
                     <tr>
-                        <td><a href="../FileFolder/<?= urlencode($entry['file']) ?>" download="<?= htmlspecialchars($entry['file']) ?>"><?= htmlspecialchars($entry['name']) ?></a></td>
+                        <td><a href="download.php?file=<?= urlencode($entry['file']) ?>" download="<?= htmlspecialchars($entry['file']) ?>"><?= htmlspecialchars($entry['name']) ?></a></td>
                         <td><?= htmlspecialchars($entry['authors']) ?></td>
                         <td><?= htmlspecialchars($entry['department']) ?></td>
                         <td><?= htmlspecialchars($entry['category']) ?></td>
                         <td><?= date('F j, Y, g:i A', $entry['uploaded']) ?></td>
-                        <td><a class="download-btn" href="../FileFolder/<?= urlencode($entry['file']) ?>" download="<?= htmlspecialchars($entry['file']) ?>">Download</a></td>
+                        <td><a class="download-btn" href="download.php?file=<?= urlencode($entry['file']) ?>" download="<?= htmlspecialchars($entry['file']) ?>">Download</a></td>
                     </tr>
                 <?php endforeach; ?>
             </tbody>

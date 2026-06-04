@@ -1,6 +1,7 @@
 <?php
     // buildMetadataString() constructs the metadata text from form POST data.
     // This metadata is later read by home.php's readMeta() function.
+    //??Creates an associative array to later convert into suedo meta data for every upload.
     function buildMetadataString() {
         return 
             "Title=" . $_POST['TitleTXT'] . "\n" .
@@ -12,10 +13,7 @@
             "Course=" . $_POST['CourseTXT'] . "\n" .
             "Category=" . $_POST['CategoryTXT'] . "\n";
     }
-
-    // uploadfile() handles the submitted research paper upload and saves metadata.
-    // It reads values from $_FILES and $_POST, writes the file into FileFolder, and
-    // creates a .meta file containing the form metadata.
+    //?? handles upload and creating a new file based on the file name of the uploaded text file but with meta at the end of the name, stored inside are metadata of the file.
     function uploadfile(){
         // Path to the folder where uploaded documents are stored.
         $targetDir = "FileFolder/";
@@ -24,7 +22,7 @@
         // basename() prevents directory traversal attacks in the filename.
         $destFolder = $targetDir . basename($_FILES['docFile']['name']);
 
-        // Temporary location of the uploaded file.ss
+        // Temporary location of the uploaded file
         $tempfile = $_FILES['docFile']['tmp_name'];
 
         // Move the uploaded file from the temporary folder into FileFolder.
