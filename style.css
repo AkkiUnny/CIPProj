@@ -1,0 +1,207 @@
+
+/* ---- Reset & Box Model ---- */
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+/* ---- Design Tokens ---- */
+:root {
+  --bg:           #F5F2EC;
+  --surface:      #EDEAE2;
+  --surface2:     #E4E0D6;
+  --border:       #C8C3B5;
+  --text:         #131b22;
+  --text-muted:   #7A7669;
+  --accent:       #1070a8;
+  --accent-light: #39a0f5;
+  --red:          #8B2E2E;
+}
+
+/* ---- Base ---- */
+html, body {
+  min-height: 100vh;
+  background: var(--bg);
+  font-family: 'DM Mono', monospace;
+  color: var(--text);
+}
+
+/* Notebook ruled-line background */
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background-image: repeating-linear-gradient(
+    0deg,
+    transparent,
+    transparent 39px,
+    var(--border) 39px,
+    var(--border) 40px
+  );
+  opacity: 0.35;
+  pointer-events: none;
+}
+
+/* ---- Typography helpers ---- */
+.serif {
+  font-family: 'DM Serif Display', serif;
+}
+
+/* ---- Shared card/panel look ---- */
+.card {
+  background: rgba(255, 255, 255, 0.35);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+}
+
+/* ---- Alert ---- */
+.alert-error {
+  padding: 12px 14px;
+  background: #FBE9E9;
+  border: 1px solid #E8C4C4;
+  border-radius: 4px;
+  color: var(--red);
+  font-size: 12px;
+  margin-bottom: 20px;
+}
+
+/* ---- Form elements ---- */
+.form-row {
+  margin-bottom: 20px;
+}
+
+.form-row label {
+  display: block;
+  font-size: 10px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  margin-bottom: 8px;
+}
+
+.form-row input {
+  width: 100%;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  padding: 11px 14px;
+  font-family: 'DM Mono', monospace;
+  font-size: 13px;
+  color: var(--text);
+  outline: none;
+  transition: border-color 0.15s;
+}
+
+.form-row input:focus {
+  border-color: var(--accent-light);
+}
+
+/* ---- Primary button ---- */
+.btn-primary {
+  width: 100%;
+  margin-top: 8px;
+  padding: 12px;
+  background: var(--accent);
+  color: #F5F2EC;
+  border: none;
+  border-radius: 4px;
+  font-family: 'DM Mono', monospace;
+  font-size: 11px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+
+.btn-primary:hover {
+  background: var(--accent-light);
+}
+
+/* ---- Shared sidebar/brand panel ---- */
+.side-panel {
+  background: var(--accent);
+  color: #F5F2EC;
+  padding: 40px;
+  display: flex;
+  flex-direction: column;
+}
+
+.side-panel-logo {
+  font-family: 'DM Serif Display', serif;
+  font-size: 28px;
+  letter-spacing: -0.02em;
+}
+
+.side-panel-logo em {
+  font-style: italic;
+  opacity: 0.65;
+}
+
+.side-panel-tagline {
+  font-size: 11px;
+  opacity: 0.55;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  margin-top: 8px;
+}
+
+.side-panel-body {
+  margin-top: auto;
+  margin-bottom: 30px;
+}
+
+.side-panel-body h2 {
+  font-family: 'DM Serif Display', serif;
+  font-size: 22px;
+  font-style: italic;
+  line-height: 1.4;
+  margin-bottom: 16px;
+  opacity: 0.9;
+}
+
+.side-panel-body p {
+  font-size: 12px;
+  opacity: 0.55;
+  line-height: 1.7;
+}
+
+.side-panel-footer {
+  font-size: 10px;
+  opacity: 0.35;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+/* ---- Dashboard nav ---- */
+.nav {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin-top: 12px;
+}
+
+.nav a {
+  text-decoration: none;
+  color: var(--text);
+  padding: 10px 14px;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  background: rgba(255, 255, 255, 0.53);
+}
+
+.nav a:hover {
+  background: #fff;
+}
+
+/* ---- Page panels (included pages) ---- */
+.panel {
+  padding: 20px 0;
+}
+
+.panel-title {
+  font-family: 'DM Serif Display', serif;
+  font-size: 22px;
+  margin-bottom: 16px;
+  color: var(--text);
+}
