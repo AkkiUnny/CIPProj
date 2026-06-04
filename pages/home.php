@@ -2,9 +2,10 @@
 
 $selectedDepartment = $_GET['dept'] ?? 'ALL';
 $searchTerm = trim($_GET['search'] ?? '');
-$selectedCategory = $_GET['category'] ?? 'All';
+$selectedCategory = $_GET['category'] ?? '';
 
 $departmentOptions = ['ALL', 'CBA', 'CENG', 'CCSS', 'CAS', 'CFAD', 'LAW', 'DENT', 'GRAD'];
+$categoryOptions = [];
 
 // readMeta() loads metadata from a .meta file for a given document.
 // It is called for each uploaded file in FileFolder and returns an associative array.
@@ -17,7 +18,8 @@ function readMeta($filePath) {
         "Authors" => "",
         "Department" => "",
         "Adviser" => "",
-        "Year" => ""
+        "Year" => "",
+        "Category" => ""
     ];
 
     // The metadata file uses the uploaded filename plus .meta extension.
@@ -58,12 +60,19 @@ if (is_dir($targetDir)) {
 
         $meta = readMeta($path);
         $departmentCode = $meta['Department'] ?: 'Unknown';
+        $categoryValue = $meta['Category'] ?: 'Research';
+
+        // Track category options dynamically so the filter dropdown has valid choices.
+        if (!in_array($categoryValue, $categoryOptions, true)) {
+            $categoryOptions[] = $categoryValue;
+        }
+
         $fileEntries[] = [
             'name' => $meta['Title'] ?: $item,
             'authors' => $meta['Authors'] ?: 'Unknown',
             'department' => $departmentCode,
             'department_code' => $departmentCode,
-            'category' => $meta['Category'] ?: 'Research',
+            'category' => $categoryValue,
             'file' => $item,
             'uploaded' => filemtime($path),
         ];
@@ -76,16 +85,29 @@ if (is_dir($targetDir)) {
         return $b['uploaded'] <=> $a['uploaded'];
     });
 
-    if ($query !== '') {
-        $query = mb_strtolower($query, 'UTF-8');
-        $fileEntries = array_values(array_filter($fileEntries, function ($entry) use ($query) {
-            $haystack = mb_strtolower($entry['name'] . ' ' . $entry['department'] . ' ' . $entry['file'], 'UTF-8');
-            return str_contains($haystack, $query);
+    if ($selectedDepartment !== 'ALL') {
+        $fileEntries = array_values(array_filter($fileEntries, function ($entry) use ($selectedDepartment) {
+            return $entry['department_code'] === $selectedDepartment;
+        }));
+    }
+
+    if ($selectedCategory !== '') {
+        $fileEntries = array_values(array_filter($fileEntries, function ($entry) use ($selectedCategory) {
+            return $entry['category'] === $selectedCategory;
+        }));
+    }
+
+    if ($searchTerm !== '') {
+        $searchTerm = mb_strtolower($searchTerm, 'UTF-8');
+        $fileEntries = array_values(array_filter($fileEntries, function ($entry) use ($searchTerm) {
+            $haystack = mb_strtolower($entry['name'] . ' ' . $entry['authors'] . ' ' . $entry['department'] . ' ' . $entry['category'] . ' ' . $entry['file'], 'UTF-8');
+            return str_contains($haystack, $searchTerm);
         }));
     }
 }
-ksort($categoryOptions);
-$categoryOptions = array_keys($categoryOptions);
+
+$categoryOptions = array_unique($categoryOptions);
+sort($categoryOptions, SORT_STRING);
 
 ?>
 
@@ -105,7 +127,7 @@ $categoryOptions = array_keys($categoryOptions);
         <input type="hidden" name="dept" value="<?= htmlspecialchars($selectedDepartment) ?>" />
         <input class="dept-search" type="text" name="search" value="<?= htmlspecialchars($searchTerm) ?>" placeholder="Search title, author, or category" />
         <select class="dept-filter" name="category">
-            <option value="All" <?= $selectedCategory === 'All' ? 'selected' : '' ?>>All categories</option>
+            <option value="">All</option>
             <?php foreach ($categoryOptions as $category): ?>
                 <option value="<?= htmlspecialchars($category) ?>" <?= $selectedCategory === $category ? 'selected' : '' ?>><?= htmlspecialchars($category) ?></option>
             <?php endforeach; ?>
@@ -113,8 +135,8 @@ $categoryOptions = array_keys($categoryOptions);
         <button class="dept-button" type="submit">Filter</button>
     </form>
 
-    <?php if ($searchTerm !== '' || $selectedCategory !== 'All'): ?>
-        <p class="dept-note">Active filters: <?= htmlspecialchars(trim(($searchTerm !== '' ? 'Search: ' . $searchTerm : '') . ($selectedCategory !== 'All' ? ' Category: ' . $selectedCategory : ''), ' ')) ?></p>
+    <?php if ($searchTerm !== '' || $selectedCategory !== ''): ?>
+        <p class="dept-note">Active filters: <?= htmlspecialchars(trim(($searchTerm !== '' ? 'Search: ' . $searchTerm : '') . ($selectedCategory !== '' ? ' Category: ' . $selectedCategory : ''), ' ')) ?></p>
     <?php endif; ?>
 
     <?php if (!empty($fileEntries)): ?>

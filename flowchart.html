@@ -1,0 +1,395 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CIPProj Program Flow &mdash; System Architecture</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Mono:wght@300;400;500&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/mermaid/dist/mermaid.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --bg: #F5F2EC;
+            --surface: #EDEAE2;
+            --surface2: #E4E0D6;
+            --border: #C8C3B5;
+            --text: #131b22;
+            --text-muted: #7A7669;
+            --accent: #1070a8;
+            --accent-light: #39a0f5;
+        }
+
+        body {
+            background: var(--bg);
+            font-family: 'DM Mono', monospace;
+            color: var(--text);
+            min-height: 100vh;
+            padding: 40px 20px;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+
+        header h1 {
+            font-family: 'DM Serif Display', serif;
+            font-size: 32px;
+            margin-bottom: 8px;
+            letter-spacing: -0.02em;
+        }
+
+        header p {
+            color: var(--text-muted);
+            font-size: 13px;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+        }
+
+        .flowchart-section {
+            background: rgba(255, 255, 255, 0.5);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 30px;
+            margin-bottom: 40px;
+            overflow-x: auto;
+        }
+
+        .flowchart-section h2 {
+            font-family: 'DM Serif Display', serif;
+            font-size: 18px;
+            margin-bottom: 20px;
+            color: var(--accent);
+        }
+
+        .mermaid {
+            display: flex;
+            justify-content: center;
+            background: rgba(255, 255, 255, 0.7);
+            padding: 20px;
+            border-radius: 8px;
+        }
+
+        .legend {
+            margin-top: 30px;
+            padding-top: 20px;
+            border-top: 1px solid var(--border);
+        }
+
+        .legend h3 {
+            font-family: 'DM Serif Display', serif;
+            font-size: 14px;
+            margin-bottom: 12px;
+            color: var(--text);
+        }
+
+        .legend-items {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 12px;
+            font-size: 12px;
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .legend-box {
+            width: 20px;
+            height: 20px;
+            border-radius: 4px;
+            flex-shrink: 0;
+        }
+
+        .legend-page { background: #E1F5FE; border: 2px solid var(--accent); }
+        .legend-function { background: #FFF9C4; border: 2px solid #FBC02D; }
+        .legend-data { background: #F3E5F5; border: 2px solid #9C27B0; }
+
+        .details-section {
+            margin-top: 40px;
+        }
+
+        .details-section h2 {
+            font-family: 'DM Serif Display', serif;
+            font-size: 20px;
+            margin-bottom: 20px;
+            color: var(--accent);
+        }
+
+        .detail-card {
+            background: rgba(255, 255, 255, 0.5);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 16px;
+        }
+
+        .detail-card h3 {
+            font-size: 13px;
+            margin-bottom: 8px;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            color: var(--accent);
+        }
+
+        .detail-card p {
+            font-size: 12px;
+            line-height: 1.6;
+            color: var(--text-muted);
+            margin-bottom: 8px;
+        }
+
+        .detail-card ul {
+            margin-left: 20px;
+            font-size: 12px;
+            color: var(--text-muted);
+            line-height: 1.6;
+        }
+
+        .detail-card code {
+            background: var(--surface);
+            padding: 2px 6px;
+            border-radius: 3px;
+            font-size: 11px;
+            color: var(--text);
+        }
+
+        footer {
+            text-align: center;
+            margin-top: 60px;
+            padding-top: 20px;
+            border-top: 1px solid var(--border);
+            font-size: 11px;
+            color: var(--text-muted);
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>CIPProj Program Flow</h1>
+            <p>System Architecture and Function Interactions</p>
+        </header>
+
+        <!-- Main Application Flow -->
+        <div class="flowchart-section">
+            <h2>Application Entry and Navigation Flow</h2>
+            <div class="mermaid">
+                graph TD
+                    A["index.php<br/>Login Page"] -->|User Authenticates| B["dashboard.php<br/>Main Dashboard"]
+                    B -->|Browse Papers| C["home.php<br/>Library Page"]
+                    B -->|Upload Paper| D["submit.php<br/>Upload Page"]
+                    B -->|Register| E["register.php<br/>Registration Page"]
+                    B -->|View Users| F["userlist.php<br/>User List"]
+                    
+                    C -->|readMeta| G["FileFolder/<br/>Files &amp; Metadata"]
+                    D -->|uploadfile| H["FileFolder/<br/>New File &amp; .meta"]
+                    
+                    E -->|Save User| I["userlist.txt<br/>User Database"]
+
+                    style A fill:#E1F5FE,stroke:#1070a8,stroke-width:2px
+                    style B fill:#E1F5FE,stroke:#1070a8,stroke-width:2px
+                    style C fill:#E1F5FE,stroke:#1070a8,stroke-width:2px
+                    style D fill:#E1F5FE,stroke:#1070a8,stroke-width:2px
+                    style E fill:#E1F5FE,stroke:#1070a8,stroke-width:2px
+                    style F fill:#E1F5FE,stroke:#1070a8,stroke-width:2px
+                    style G fill:#F3E5F5,stroke:#9C27B0,stroke-width:2px
+                    style H fill:#F3E5F5,stroke:#9C27B0,stroke-width:2px
+                    style I fill:#F3E5F5,stroke:#9C27B0,stroke-width:2px
+            </div>
+        </div>
+
+        <!-- Home Page Data Flow -->
+        <div class="flowchart-section">
+            <h2>Home Page (Library) Data Flow</h2>
+            <div class="mermaid">
+                graph TD
+                    A["GET Parameters<br/>dept, search, category"] -->|Parsed| B["Filter &amp; Sort Logic<br/>home.php"]
+                    
+                    C["FileFolder/ Directory<br/>Scanned"] -->|For each file| D["readMeta Function<br/>Loads .meta file"]
+                    D -->|Returns| E["Metadata Array<br/>Title, Authors, Dept, Category"]
+                    
+                    E -->|Added to| F["fileEntries Array<br/>All file data"]
+                    
+                    F -->|Sort by| G["Upload Timestamp<br/>Newest First"]
+                    G -->|Filter by| H["Department Selected<br/>dept=CBA, CENG, etc."]
+                    H -->|Filter by| I["Category Selected<br/>Research, Case Study, etc."]
+                    I -->|Filter by| J["Search Term<br/>Title, Author, Category"]
+                    
+                    J -->|Display in| K["HTML Table<br/>6 Columns Rendered"]
+                    K -->|User clicks| L["Download File<br/>Force Download .meta tag"]
+
+                    style A fill:#FFF9C4,stroke:#FBC02D,stroke-width:2px
+                    style B fill:#FFF9C4,stroke:#FBC02D,stroke-width:2px
+                    style C fill:#F3E5F5,stroke:#9C27B0,stroke-width:2px
+                    style D fill:#FFF9C4,stroke:#FBC02D,stroke-width:2px
+                    style E fill:#F3E5F5,stroke:#9C27B0,stroke-width:2px
+                    style F fill:#F3E5F5,stroke:#9C27B0,stroke-width:2px
+                    style G fill:#FFF9C4,stroke:#FBC02D,stroke-width:2px
+                    style H fill:#FFF9C4,stroke:#FBC02D,stroke-width:2px
+                    style I fill:#FFF9C4,stroke:#FBC02D,stroke-width:2px
+                    style J fill:#FFF9C4,stroke:#FBC02D,stroke-width:2px
+                    style K fill:#E1F5FE,stroke:#1070a8,stroke-width:2px
+                    style L fill:#FFF9C4,stroke:#FBC02D,stroke-width:2px
+            </div>
+        </div>
+
+        <!-- Submit Page Data Flow -->
+        <div class="flowchart-section">
+            <h2>Submit Page (Upload) Data Flow</h2>
+            <div class="mermaid">
+                graph TD
+                    A["HTML Form<br/>submit.php"] -->|User fills fields| B["POST Data<br/>TitleTXT, AuthorsTXT, etc."]
+                    A -->|User selects file| C["$_FILES['docFile']<br/>Temporary upload"]
+                    
+                    B -->|Form submitted| D["if isset POST Upload| Then call uploadfile"]
+                    C -->|Pass to| D
+                    
+                    D -->|Execute| E["uploadfile Function<br/>main logic"]
+                    E -->|Gets temp file| F["tempfile from $_FILES<br/>System temp location"]
+                    E -->|Gets filename| G["basename from $_FILES<br/>Original filename"]
+                    
+                    F -->|move_uploaded_file| H["FileFolder/filename<br/>File saved"]
+                    
+                    E -->|Builds metadata| I["String from POST data<br/>Title=value, Authors=value..."]
+                    I -->|Save as| J["FileFolder/filename.meta<br/>Parallel metadata file"]
+                    
+                    H -->|File stored| K["Success Message<br/>Shown to user"]
+                    J -->|Metadata stored| K
+                    
+                    H -->|Later read by| L["home.php readMeta<br/>Displays in library"]
+
+                    style A fill:#E1F5FE,stroke:#1070a8,stroke-width:2px
+                    style B fill:#F3E5F5,stroke:#9C27B0,stroke-width:2px
+                    style C fill:#F3E5F5,stroke:#9C27B0,stroke-width:2px
+                    style D fill:#FFF9C4,stroke:#FBC02D,stroke-width:2px
+                    style E fill:#FFF9C4,stroke:#FBC02D,stroke-width:2px
+                    style F fill:#F3E5F5,stroke:#9C27B0,stroke-width:2px
+                    style G fill:#F3E5F5,stroke:#9C27B0,stroke-width:2px
+                    style H fill:#F3E5F5,stroke:#9C27B0,stroke-width:2px
+                    style I fill:#F3E5F5,stroke:#9C27B0,stroke-width:2px
+                    style J fill:#F3E5F5,stroke:#9C27B0,stroke-width:2px
+                    style K fill:#E1F5FE,stroke:#1070a8,stroke-width:2px
+                    style L fill:#FFF9C4,stroke:#FBC02D,stroke-width:2px
+            </div>
+            <div class="legend">
+                <h3>Legend</h3>
+                <div class="legend-items">
+                    <div class="legend-item">
+                        <div class="legend-box legend-page"></div>
+                        <span>Page / View</span>
+                    </div>
+                    <div class="legend-item">
+                        <div class="legend-box legend-function"></div>
+                        <span>Function / Logic</span>
+                    </div>
+                    <div class="legend-item">
+                        <div class="legend-box legend-data"></div>
+                        <span>Data / Storage</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Detailed Function Documentation -->
+        <div class="details-section">
+            <h2>Function Breakdown &amp; Interactions</h2>
+
+            <div class="detail-card">
+                <h3>readMeta(filePath) — home.php</h3>
+                <p><strong>Purpose:</strong> Loads metadata from a .meta file associated with an uploaded research paper.</p>
+                <p><strong>Parameters:</strong></p>
+                <ul>
+                    <li><code>$filePath</code>: Full path to the uploaded document file</li>
+                </ul>
+                <p><strong>Returns:</strong> Associative array with keys: Title, Authors, Department, Adviser, Year, Category</p>
+                <p><strong>How it works:</strong></p>
+                <ul>
+                    <li>Sets default metadata values (Title=filename, others blank)</li>
+                    <li>Constructs metadata file path by appending ".meta" to the document filename</li>
+                    <li>If .meta file exists, reads lines and parses key=value pairs into the $meta array</li>
+                    <li>Returns the populated metadata array to the caller</li>
+                </ul>
+                <p><strong>Called by:</strong> home.php's file scanning loop (line ~58)</p>
+                <p><strong>Creates data used by:</strong> fileEntries array, HTML table rows</p>
+            </div>
+
+            <div class="detail-card">
+                <h3>uploadfile() — submit.php</h3>
+                <p><strong>Purpose:</strong> Handles file upload, stores the document, and creates an accompanying metadata file.</p>
+                <p><strong>Parameters:</strong> None (uses global $_FILES and $_POST)</p>
+                <p><strong>Returns:</strong> Echo success/failure message to user</p>
+                <p><strong>How it works:</strong></p>
+                <ul>
+                    <li>Gets the temporary upload location from <code>$_FILES['docFile']['tmp_name']</code></li>
+                    <li>Gets the original filename from <code>$_FILES['docFile']['name']</code></li>
+                    <li>Uses <code>move_uploaded_file()</code> to move the temp file into FileFolder/</li>
+                    <li>If successful, builds a metadata string from all POST form fields (Title, Authors, Department, etc.)</li>
+                    <li>Saves the metadata string into a .meta file alongside the uploaded document</li>
+                    <li>Outputs success message; otherwise outputs error message</li>
+                </ul>
+                <p><strong>Called by:</strong> submit.php bottom section (line ~262)</p>
+                <p><strong>Interacts with:</strong> $_FILES, $_POST, FileFolder/ directory, .meta files</p>
+            </div>
+
+            <div class="detail-card">
+                <h3>home.php — File Scanning &amp; Filtering</h3>
+                <p><strong>Purpose:</strong> Builds and filters the file list based on user inputs (department, category, search term).</p>
+                <p><strong>Key variables:</strong></p>
+                <ul>
+                    <li><code>$selectedDepartment</code>: From GET dept parameter (default: ALL)</li>
+                    <li><code>$selectedCategory</code>: From GET category parameter (default: empty)</li>
+                    <li><code>$searchTerm</code>: From GET search parameter (default: empty)</li>
+                    <li><code>$fileEntries</code>: Array of file data built from directory scan</li>
+                </ul>
+                <p><strong>Filtering flow:</strong></p>
+                <ul>
+                    <li>Scans FileFolder/ directory, calls <code>readMeta()</code> for each file</li>
+                    <li>Sorts files newest first by <code>filemtime()</code></li>
+                    <li>Filters by <code>$selectedDepartment</code> (if not ALL)</li>
+                    <li>Filters by <code>$selectedCategory</code> (if selected)</li>
+                    <li>Filters by <code>$searchTerm</code> (searches title, authors, department, category, filename)</li>
+                    <li>Renders remaining files in HTML table</li>
+                </ul>
+            </div>
+
+            <div class="detail-card">
+                <h3>Data Flow: Upload → Storage → Display</h3>
+                <p><strong>Complete cycle:</strong></p>
+                <ul>
+                    <li>User fills submit.php form and selects file</li>
+                    <li>Form POSTs to submit.php, triggering <code>uploadfile()</code></li>
+                    <li><code>uploadfile()</code> moves file to FileFolder/ and creates .meta file</li>
+                    <li>User navigates to home.php or clicks a department button</li>
+                    <li>home.php scans FileFolder/, calls <code>readMeta()</code> for each file</li>
+                    <li><code>readMeta()</code> parses the .meta file created by uploadfile()</li>
+                    <li>Metadata populates the file table with Title, Authors, Department, Category, etc.</li>
+                    <li>User can search, filter by department/category, or download the file</li>
+                </ul>
+            </div>
+        </div>
+
+        <footer>
+            <p>CIPProj — Research Archive System | Program Flow Documentation</p>
+            <p>Created 2026 | For detailed code comments, see individual page source files</p>
+        </footer>
+    </div>
+
+    <script>
+        mermaid.contentLoaded();
+    </script>
+</body>
+</html>
