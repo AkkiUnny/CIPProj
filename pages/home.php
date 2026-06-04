@@ -1,5 +1,7 @@
 <?php
 
+$query = trim($_GET['q'] ?? '');
+
 // readMeta() loads metadata from a .meta file for a given document.
 function readMeta($filePath) {
 
@@ -61,13 +63,29 @@ if (is_dir($targetDir)) {
     usort($fileEntries, function ($a, $b) {
         return $b['uploaded'] <=> $a['uploaded'];
     });
+
+    if ($query !== '') {
+        $query = mb_strtolower($query, 'UTF-8');
+        $fileEntries = array_values(array_filter($fileEntries, function ($entry) use ($query) {
+            $haystack = mb_strtolower($entry['name'] . ' ' . $entry['department'] . ' ' . $entry['file'], 'UTF-8');
+            return str_contains($haystack, $query);
+        }));
+    }
 }
 
 ?>
 
 <div class="panel">
     <div class="panel-title">Welcome to the Library</div>
-    <!-- <p>Recent uploads</p> -->
+
+    <form class="library-search-form" method="get" action="dashboard.php?page=home">
+        <input class="library-search-input" type="text" name="q" value="<?= htmlspecialchars($query) ?>" placeholder="Search by title, department, or file name" />
+        <button class="library-search-button" type="submit">Search</button>
+    </form>
+
+    <?php if ($query !== ''): ?>
+        <p class="search-summary">Showing results for “<?= htmlspecialchars($query) ?>”.</p>
+    <?php endif; ?>
 
     <?php if (!empty($fileEntries)): ?>
         <!-- Table shows uploaded research files, department, upload date, and download link -->
@@ -102,6 +120,48 @@ if (is_dir($targetDir)) {
     <?php endif; ?>
 
     <style>
+        .library-search-form {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+            margin-bottom: 14px;
+            flex-wrap: wrap;
+        }
+
+        .library-search-input {
+            flex: 1 1 280px;
+            min-width: 220px;
+            padding: 10px 12px;
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            background: rgba(255, 255, 255, 0.8);
+            font-family: 'DM Mono', monospace;
+            font-size: 12px;
+        }
+
+        .library-search-button {
+            padding: 10px 14px;
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            background: var(--accent);
+            color: #fff;
+            font-family: 'DM Mono', monospace;
+            font-size: 11px;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+            cursor: pointer;
+        }
+
+        .library-search-button:hover {
+            background: var(--accent-light);
+        }
+
+        .search-summary {
+            margin-bottom: 8px;
+            color: var(--text-muted);
+            font-size: 12px;
+        }
+
         .file-table {
             width: 100%;
             border-collapse: collapse;

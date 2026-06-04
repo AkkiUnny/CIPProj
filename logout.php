@@ -1,4 +1,5 @@
 <?php
+// completely log out the user by clearing cookies, sessions, and redirecting to home
 session_start();
 
 if (isset($_COOKIE['login_cookie'])) {

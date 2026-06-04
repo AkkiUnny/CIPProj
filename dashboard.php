@@ -55,9 +55,7 @@ if (!in_array($page, $allowed)) {
 
 .content {
     padding: 28px;
-    min-height: 420px;
-}
-
+        min-height: 620px;
 .library-shell {
     display: grid;
     grid-template-columns: 280px 1fr;
