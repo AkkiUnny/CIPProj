@@ -100,7 +100,7 @@ if (!in_array($page, $allowed)) {
             <div class="user">Dashboard Navigation</div>
 
             <div class="nav">
-                <a href="?page=home">Home</a>
+                <a href="?page=home">Library</a>
                 <a href="?page=submit">Submit</a>
                 <a href="?page=departments">Departments</a>
                 <a href="?page=search">Search</a>
