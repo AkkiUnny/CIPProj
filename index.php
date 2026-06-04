@@ -1,8 +1,11 @@
 <?php
 session_start();
 
+// start the login session for this page
+
 function getUsers() {
 
+    // read saved users from the text file
     $users = [];
 
     if (file_exists("userlist.txt")) {
@@ -26,6 +29,7 @@ function getUsers() {
 
 function loginUser($user) {
 
+    // store the logged-in user details in the session
     $_SESSION['user'] = $user['username'];
     $_SESSION['password'] = $user['password'];
     $_SESSION['name'] = $user['name'];
@@ -33,13 +37,13 @@ function loginUser($user) {
     $_SESSION['department'] = $user['department'];
 }
 
-/* Already logged in */
+// if the user is already signed in, go to the dashboard
 if (isset($_SESSION['user'])) {
     header("Location: dashboard.php");
     exit();
 }
 
-/* Remember me cookie */
+// try to use the remember-me cookie to sign in again
 if (isset($_COOKIE['login_cookie'])) {
 
     foreach (getUsers() as $user) {
@@ -56,6 +60,7 @@ if (isset($_COOKIE['login_cookie'])) {
 
 $error = "";
 
+// handle the login form when the user submits it
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
 
     $username = $_POST["username"];
