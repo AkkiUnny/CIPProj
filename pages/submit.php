@@ -1,10 +1,13 @@
 <?php
     // uploadfile() handles the submitted research paper upload and saves metadata.
+    // It reads values from $_FILES and $_POST, writes the file into FileFolder, and
+    // creates a .meta file containing the form metadata.
     function uploadfile(){
         // Path to the folder where uploaded documents are stored.
         $targetDir = "FileFolder/";
                     
         // Use the original filename and combine it with the upload folder path.
+        // basename() prevents directory traversal attacks in the filename.
         $destFolder = $targetDir . basename($_FILES['docFile']['name']);
 
         // Temporary location of the uploaded file.
@@ -17,6 +20,7 @@
             $metaFile = $destFolder . ".meta";
 
             // Build the metadata text from the submitted form fields.
+            // These values are later read by home.php's readMeta() function.
             $metadata =
                 "Title=" . $_POST['TitleTXT'] . "\n" .
                 "Authors=" . $_POST['AuthorsTXT'] . "\n" .
@@ -36,14 +40,6 @@
             // If file upload fails, show a user-friendly message.
             echo "Trying to upload your paper again. Make sure the file is not too large and is in an accepted format.";
         }
-
-        // This block scans the upload directory for debugging, but output is commented out.
-        $targetDir = "FileFolder/";
-        $dirlist = scandir($targetDir, 1); 
-
-        // foreach($dirlist as $listing){
-        //     echo "<a href='FileFolder/" . urlencode($listing) . "'> {$listing} </a><br> ";
-        // }
     }
 
     
@@ -194,6 +190,8 @@
     </style>
 </div>
 <?php
+    // Only call uploadfile() when the submit button named Upload is present.
+    // This prevents the upload logic from running when the page is first loaded.
     if(isset($_POST['Upload'])){
         uploadfile();
     }

@@ -7,9 +7,11 @@ $selectedCategory = $_GET['category'] ?? 'All';
 $departmentOptions = ['ALL', 'CBA', 'CENG', 'CCSS', 'CAS', 'CFAD', 'LAW', 'DENT', 'GRAD'];
 
 // readMeta() loads metadata from a .meta file for a given document.
+// It is called for each uploaded file in FileFolder and returns an associative array.
 function readMeta($filePath) {
 
-    // Default metadata values if no .meta file exists.
+    // Default metadata values if the matching .meta file is missing.
+    // This ensures the table still displays something meaningful.
     $meta = [
         "Title" => basename($filePath),
         "Authors" => "",
@@ -25,6 +27,7 @@ function readMeta($filePath) {
         $lines = file($metaFile, FILE_IGNORE_NEW_LINES);
 
         // Parse each line in the form key=value.
+        // This converts the .meta text file into the $meta associative array.
         foreach ($lines as $line) {
             [$key, $value] = explode("=", $line, 2);
             $meta[$key] = $value;
@@ -35,6 +38,7 @@ function readMeta($filePath) {
 }
 
 // Build the list of uploaded files from the FileFolder directory.
+// The page uses $fileEntries later in the HTML table.
 $targetDir = dirname(__DIR__) . '/FileFolder/';
 $fileEntries = [];
 if (is_dir($targetDir)) {
@@ -66,37 +70,18 @@ if (is_dir($targetDir)) {
     }
 
     // Sort files newest first by upload timestamp.
+    // This uses filemtime() and the anonymous function below.
     usort($fileEntries, function ($a, $b) {
+        // Compare upload timestamps to order most recent first.
         return $b['uploaded'] <=> $a['uploaded'];
     });
-}
 
-$allEntries = $fileEntries;
-
-if ($selectedDepartment !== 'ALL') {
-    $fileEntries = array_values(array_filter($allEntries, function ($entry) use ($selectedDepartment) {
-        return strcasecmp($entry['department_code'], $selectedDepartment) === 0;
-    }));
-}
-
-if ($searchTerm !== '') {
-    $needle = mb_strtolower($searchTerm, 'UTF-8');
-    $fileEntries = array_values(array_filter($fileEntries, function ($entry) use ($needle) {
-        $haystack = mb_strtolower($entry['name'] . ' ' . $entry['authors'] . ' ' . $entry['category'], 'UTF-8');
-        return str_contains($haystack, $needle);
-    }));
-}
-
-if ($selectedCategory !== 'All') {
-    $fileEntries = array_values(array_filter($fileEntries, function ($entry) use ($selectedCategory) {
-        return strcasecmp($entry['category'], $selectedCategory) === 0;
-    }));
-}
-
-$categoryOptions = [];
-foreach ($allEntries as $entry) {
-    if ($entry['category'] !== '') {
-        $categoryOptions[$entry['category']] = true;
+    if ($query !== '') {
+        $query = mb_strtolower($query, 'UTF-8');
+        $fileEntries = array_values(array_filter($fileEntries, function ($entry) use ($query) {
+            $haystack = mb_strtolower($entry['name'] . ' ' . $entry['department'] . ' ' . $entry['file'], 'UTF-8');
+            return str_contains($haystack, $query);
+        }));
     }
 }
 ksort($categoryOptions);
