@@ -24,7 +24,7 @@
         // basename() prevents directory traversal attacks in the filename.
         $destFolder = $targetDir . basename($_FILES['docFile']['name']);
 
-        // Temporary location of the uploaded file.
+        // Temporary location of the uploaded file.ss
         $tempfile = $_FILES['docFile']['tmp_name'];
 
         // Move the uploaded file from the temporary folder into FileFolder.
