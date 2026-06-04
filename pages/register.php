@@ -1,10 +1,9 @@
 <?php
-
 $registration_error = '';
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
-    $user_file = __DIR__ . '/../userlist.txt';
+    $user_file = dirname(__FILE__) . '/../userlist.txt';
 
     $username = trim($_POST['username'] ?? '');
     $password = $_POST['password'] ?? '';
@@ -19,24 +18,21 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     } else {
 
         if (!file_exists($user_file)) {
-            file_put_contents($user_file, '');
+            file_put_contents($user_file, "");
         }
 
-        $lines = file($user_file, FILE_IGNORE_NEW_LINES);
-        $clean_lines = array_values(array_filter($lines, static function ($line) {
-            return trim($line) !== '';
-        }));
+        $lines = file($user_file, FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES);
 
         $records = [];
 
-        for ($i = 0; $i + 4 < count($clean_lines); $i += 5) {
+        for ($i = 0; $i < count($lines); $i += 5) {
 
             $records[] = [
-                "username" => $clean_lines[$i] ?? '',
-                "password" => $clean_lines[$i + 1] ?? '',
-                "full_name" => $clean_lines[$i + 2] ?? '',
-                "student_number" => $clean_lines[$i + 3] ?? '',
-                "department" => $clean_lines[$i + 4] ?? '',
+                "username" => $lines[$i] ?? '',
+                "password" => $lines[$i + 1] ?? '',
+                "full_name" => $lines[$i + 2] ?? '',
+                "student_number" => $lines[$i + 3] ?? '',
+                "department" => $lines[$i + 4] ?? '',
             ];
         }
 
@@ -58,13 +54,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
         } else {
 
-            $new_data = implode(PHP_EOL, [
-                $username,
-                $password,
-                $full_name,
-                $student_number,
-                $department,
-            ]) . PHP_EOL . PHP_EOL;
+            $new_data =
+                $username . "\n" .
+                $password . "\n" .
+                $full_name . "\n" .
+                $student_number . "\n" .
+                $department . "\n\n";
 
             file_put_contents($user_file, $new_data, FILE_APPEND | LOCK_EX);
 
