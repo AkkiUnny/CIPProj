@@ -8,7 +8,7 @@ if (!isset($_SESSION['user'])) {
 
 $page = $_GET['page'] ?? 'home';
 
-$allowed = ['home', 'register', 'submit', 'departments', 'search'];
+$allowed = ['home', 'register', 'submit'];
 
 if (!in_array($page, $allowed)) {
     $page = 'home';
@@ -28,8 +28,8 @@ if (!in_array($page, $allowed)) {
 
 <style>
 .wrap {
-    width: 1100px;
-    max-width: 95vw;
+    width: 1260px;
+    max-width: 98vw;
     margin: 40px auto;
     display: grid;
     grid-template-columns: 320px 1fr;
@@ -44,7 +44,7 @@ if (!in_array($page, $allowed)) {
 }
 
 .right {
-    padding: 32px;
+    padding: 36px;
     background: var(--bg);
 }
 
@@ -58,9 +58,60 @@ if (!in_array($page, $allowed)) {
     min-height: 420px;
 }
 
-.user {
-    font-size: 12px;
+.library-shell {
+    display: grid;
+    grid-template-columns: 280px 1fr;
+    gap: 24px;
+    align-items: start;
+}
+
+.library-sidebar {
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    background: rgba(255,255,255,0.45);
+    padding: 16px;
+}
+
+.library-sidebar h3 {
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
     color: var(--text-muted);
+    margin-bottom: 10px;
+}
+.filter-label {
+    display: block;
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--text-muted);
+    margin-bottom: 6px;
+}
+.library-chip {
+    display: block;
+    border: 1px solid var(--border);
+    border-radius: 999px;
+    padding: 8px 10px;
+    margin-bottom: 8px;
+    background: rgba(255,255,255,0.65);
+    color: var(--text);
+    text-decoration: none;
+    font-size: 11px;
+}
+
+.library-chip:hover {
+    background: #fff;
+}
+
+.library-search {
+    width: 100%;
+    margin-top: 8px;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 9px 10px;
+    font-family: 'DM Mono', monospace;
+    font-size: 12px;
+    background: rgba(255,255,255,0.8);
 }
 
 .side-panel-footer {
@@ -102,8 +153,6 @@ if (!in_array($page, $allowed)) {
             <div class="nav">
                 <a href="?page=home">Library</a>
                 <a href="?page=submit">Submit</a>
-                <a href="?page=departments">Departments</a>
-                <a href="?page=search">Search</a>
                 <a href="logout.php">Logout</a>
             </div>
         </div>
