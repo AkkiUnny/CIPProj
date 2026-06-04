@@ -1,6 +1,10 @@
 <?php
 
-$query = trim($_GET['q'] ?? '');
+$selectedDepartment = $_GET['dept'] ?? 'ALL';
+$searchTerm = trim($_GET['search'] ?? '');
+$selectedCategory = $_GET['category'] ?? 'All';
+
+$departmentOptions = ['ALL', 'CBA', 'CENG', 'CCSS', 'CAS', 'CFAD', 'LAW', 'DENT', 'GRAD'];
 
 // readMeta() loads metadata from a .meta file for a given document.
 function readMeta($filePath) {
@@ -49,11 +53,13 @@ if (is_dir($targetDir)) {
         }
 
         $meta = readMeta($path);
+        $departmentCode = $meta['Department'] ?: 'Unknown';
         $fileEntries[] = [
             'name' => $meta['Title'] ?: $item,
             'authors' => $meta['Authors'] ?: 'Unknown',
-            'department' => $meta['Department'] ?: 'Unknown',
-            'category' => $meta['Category'] ?: 'Unknown',
+            'department' => $departmentCode,
+            'department_code' => $departmentCode,
+            'category' => $meta['Category'] ?: 'Research',
             'file' => $item,
             'uploaded' => filemtime($path),
         ];
@@ -63,28 +69,67 @@ if (is_dir($targetDir)) {
     usort($fileEntries, function ($a, $b) {
         return $b['uploaded'] <=> $a['uploaded'];
     });
+}
 
-    if ($query !== '') {
-        $query = mb_strtolower($query, 'UTF-8');
-        $fileEntries = array_values(array_filter($fileEntries, function ($entry) use ($query) {
-            $haystack = mb_strtolower($entry['name'] . ' ' . $entry['department'] . ' ' . $entry['file'], 'UTF-8');
-            return str_contains($haystack, $query);
-        }));
+$allEntries = $fileEntries;
+
+if ($selectedDepartment !== 'ALL') {
+    $fileEntries = array_values(array_filter($allEntries, function ($entry) use ($selectedDepartment) {
+        return strcasecmp($entry['department_code'], $selectedDepartment) === 0;
+    }));
+}
+
+if ($searchTerm !== '') {
+    $needle = mb_strtolower($searchTerm, 'UTF-8');
+    $fileEntries = array_values(array_filter($fileEntries, function ($entry) use ($needle) {
+        $haystack = mb_strtolower($entry['name'] . ' ' . $entry['authors'] . ' ' . $entry['category'], 'UTF-8');
+        return str_contains($haystack, $needle);
+    }));
+}
+
+if ($selectedCategory !== 'All') {
+    $fileEntries = array_values(array_filter($fileEntries, function ($entry) use ($selectedCategory) {
+        return strcasecmp($entry['category'], $selectedCategory) === 0;
+    }));
+}
+
+$categoryOptions = [];
+foreach ($allEntries as $entry) {
+    if ($entry['category'] !== '') {
+        $categoryOptions[$entry['category']] = true;
     }
 }
+ksort($categoryOptions);
+$categoryOptions = array_keys($categoryOptions);
 
 ?>
 
 <div class="panel">
-    <div class="panel-title">Welcome to the Library</div>
+    <div class="panel-title">Library</div>
+    <p>Browse research papers by department with category filtering.</p>
 
-    <form class="library-search-form" method="get" action="dashboard.php?page=home">
-        <input class="library-search-input" type="text" name="q" value="<?= htmlspecialchars($query) ?>" placeholder="Search by title, department, or file name" />
-        <button class="library-search-button" type="submit">Search</button>
+    <div class="dept-tabs">
+        <?php foreach ($departmentOptions as $code): ?>
+            <a class="dept-tab <?= $selectedDepartment === $code ? 'active' : '' ?>"
+               href="dashboard.php?page=home&dept=<?= urlencode($code) ?>&search=<?= urlencode($searchTerm) ?>&category=<?= urlencode($selectedCategory) ?>"><?= htmlspecialchars($code) ?></a>
+        <?php endforeach; ?>
+    </div>
+
+    <form class="dept-controls" method="get" action="dashboard.php">
+        <input type="hidden" name="page" value="home" />
+        <input type="hidden" name="dept" value="<?= htmlspecialchars($selectedDepartment) ?>" />
+        <input class="dept-search" type="text" name="search" value="<?= htmlspecialchars($searchTerm) ?>" placeholder="Search title, author, or category" />
+        <select class="dept-filter" name="category">
+            <option value="All" <?= $selectedCategory === 'All' ? 'selected' : '' ?>>All categories</option>
+            <?php foreach ($categoryOptions as $category): ?>
+                <option value="<?= htmlspecialchars($category) ?>" <?= $selectedCategory === $category ? 'selected' : '' ?>><?= htmlspecialchars($category) ?></option>
+            <?php endforeach; ?>
+        </select>
+        <button class="dept-button" type="submit">Filter</button>
     </form>
 
-    <?php if ($query !== ''): ?>
-        <p class="search-summary">Showing results for “<?= htmlspecialchars($query) ?>”.</p>
+    <?php if ($searchTerm !== '' || $selectedCategory !== 'All'): ?>
+        <p class="dept-note">Active filters: <?= htmlspecialchars(trim(($searchTerm !== '' ? 'Search: ' . $searchTerm : '') . ($selectedCategory !== 'All' ? ' Category: ' . $selectedCategory : ''), ' ')) ?></p>
     <?php endif; ?>
 
     <?php if (!empty($fileEntries)): ?>
@@ -120,17 +165,50 @@ if (is_dir($targetDir)) {
     <?php endif; ?>
 
     <style>
-        .library-search-form {
+        .dept-tabs {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin: 14px 0;
+        }
+
+        .dept-tab {
+            display: inline-flex;
+            align-items: center;
+            padding: 8px 12px;
+            border: 1px solid var(--border);
+            border-radius: 999px;
+            text-decoration: none;
+            color: var(--text);
+            background: rgba(255, 255, 255, 0.65);
+            font-size: 11px;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+        }
+
+        .dept-tab.active,
+        .dept-tab:hover {
+            background: var(--accent);
+            color: #fff;
+            border-color: var(--accent);
+        }
+
+        .dept-note {
+            color: var(--text-muted);
+            font-size: 12px;
+            margin-bottom: 10px;
+        }
+
+        .dept-controls {
             display: flex;
             gap: 10px;
             align-items: center;
-            margin-bottom: 14px;
             flex-wrap: wrap;
+            margin-bottom: 12px;
         }
 
-        .library-search-input {
-            flex: 1 1 280px;
-            min-width: 220px;
+        .dept-search,
+        .dept-filter {
             padding: 10px 12px;
             border: 1px solid var(--border);
             border-radius: 6px;
@@ -139,7 +217,16 @@ if (is_dir($targetDir)) {
             font-size: 12px;
         }
 
-        .library-search-button {
+        .dept-search {
+            flex: 1 1 260px;
+            min-width: 220px;
+        }
+
+        .dept-filter {
+            min-width: 180px;
+        }
+
+        .dept-button {
             padding: 10px 14px;
             border: 1px solid var(--border);
             border-radius: 6px;
@@ -152,14 +239,8 @@ if (is_dir($targetDir)) {
             cursor: pointer;
         }
 
-        .library-search-button:hover {
+        .dept-button:hover {
             background: var(--accent-light);
-        }
-
-        .search-summary {
-            margin-bottom: 8px;
-            color: var(--text-muted);
-            font-size: 12px;
         }
 
         .file-table {
