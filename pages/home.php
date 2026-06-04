@@ -53,29 +53,24 @@ if (is_dir($targetDir)) {
         
         if (is_file($path)) {
             $meta = readMeta($path);
-            $deptCode = $meta['Department'] ?: 'Unknown';
-            $category = $meta['Category'] ?: 'Research';
-            $title = $meta['Title'] ?: $item;
-            $authors = $meta['Authors'] ?: 'Unknown';
+            $departmentCode = $meta['Department'] ?: 'Unknown';
+            $categoryValue = $meta['Category'] ?: 'Research';
 
-        $meta = readMeta($path);
-        $departmentCode = $meta['Department'] ?: 'Unknown';
-        $categoryValue = $meta['Category'] ?: 'Research';
+            // Track category options dynamically so the filter dropdown has valid choices.
+            if (!in_array($categoryValue, $categoryOptions, true)) {
+                $categoryOptions[] = $categoryValue;
+            }
 
-        // Track category options dynamically so the filter dropdown has valid choices.
-        if (!in_array($categoryValue, $categoryOptions, true)) {
-            $categoryOptions[] = $categoryValue;
+            $fileEntries[] = [
+                'name' => $meta['Title'] ?: $item,
+                'authors' => $meta['Authors'] ?: 'Unknown',
+                'department' => $departmentCode,
+                'department_code' => $departmentCode,
+                'category' => $categoryValue,
+                'file' => $item,
+                'uploaded' => filemtime($path),
+            ];
         }
-
-        $fileEntries[] = [
-            'name' => $meta['Title'] ?: $item,
-            'authors' => $meta['Authors'] ?: 'Unknown',
-            'department' => $departmentCode,
-            'department_code' => $departmentCode,
-            'category' => $categoryValue,
-            'file' => $item,
-            'uploaded' => filemtime($path),
-        ];
     }
 
     // 5. sort the files so newest uploads appear first
