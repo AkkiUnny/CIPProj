@@ -1,16 +1,48 @@
 <?php
+
+function readMeta($filePath) {
+
+    $meta = [
+        "Title" => $filePath,
+        "Authors" => "",
+        "Department" => "",
+        "Adviser" => "",
+        "Year" => ""
+    ];
+
+    $metaFile = $filePath . ".meta";
+
+    if (file_exists($metaFile)) {
+        $lines = file($metaFile, FILE_IGNORE_NEW_LINES);
+
+        foreach ($lines as $line) {
+            [$key, $value] = explode("=", $line, 2);
+            $meta[$key] = $value;
+        }
+    }
+
+    return $meta;
+}
+
 $targetDir = dirname(__DIR__) . '/FileFolder/';
 $files = [];
 if (is_dir($targetDir)) {
     foreach (scandir($targetDir) as $item) {
-        if ($item === '.' || $item === '..') {
-            continue;
-        }
-        if (is_file($targetDir . $item)) {
-            $files[] = $item;
-        }
+
+    if ($item === '.' || $item === '..') {
+        continue;
+    }
+
+    if (str_ends_with($item, '.meta')) {
+        continue;
+    }
+
+    if (is_file($targetDir . $item)) {
+        $files[] = $item;
     }
 }
+}
+
 ?>
 
 <div class="panel">

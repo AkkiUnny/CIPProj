@@ -10,9 +10,28 @@
                     // echo $tempfile . "<br>";
                 
                     if(move_uploaded_file($tempfile, $destFolder)){
-                        echo ("Your paper has been uploaded successfully!");
+
+                        // Create metadata file
+                        $metaFile = $destFolder . ".meta";
+
+                        $metadata =
+                            "Title=" . $_POST['TitleTXT'] . "\n" .
+                            "Authors=" . $_POST['AuthorsTXT'] . "\n" .
+                            "Department=" . $_POST['DepartmentTXT'] . "\n" .
+                            "Adviser=" . $_POST['AdviserTXT'] . "\n" .
+                            "Keywords=" . $_POST['KeywordsTXT'] . "\n" .
+                            "Year=" . $_POST['ReleaseTXT'] . "\n" .
+                            "Course=" . $_POST['CourseTXT'] . "\n" .
+                            "Category=" . $_POST['CategoryTXT'] . "\n";
+
+                        file_put_contents($metaFile, $metadata);
+
+                        echo "Your paper has been uploaded successfully!";
+
                     } else {
-                        echo ("Trying to upload your paper again. Make sure the file is not too large and is in an accepted format.");
+
+                        echo "Trying to upload your paper again. Make sure the file is not too large and is in an accepted format.";
+
                     }
 
                     $targetDir = "FileFolder/";
