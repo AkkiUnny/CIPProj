@@ -36,68 +36,94 @@ function readMeta($filePath) {
     return $meta;
 }
 
-//  set up the folder path
-$targetDir = dirname(__DIR__) . '/FileFolder/';
-$fileEntries = [];
-$categoryOptions = [];
+// scanAndBuildFileEntries() scans the FileFolder directory and builds the initial file list.
+// Collects metadata for each file and tracks available categories.
+function scanAndBuildFileEntries(&$categoryOptions) {
+    $targetDir = dirname(__DIR__) . '/FileFolder/';
+    $fileEntries = [];
 
-if (is_dir($targetDir)) {
-    // loop through all files in the folder
-    foreach (scandir($targetDir) as $item) {
-        // skip hidden system files and metadata files
-        if ($item === '.' || $item === '..' || str_ends_with($item, '.meta')) {
-            continue;
-        }
-
-        $path = $targetDir . $item;
-        
-        if (is_file($path)) {
-            $meta = readMeta($path);
-            $departmentCode = $meta['Department'] ?: 'Unknown';
-            $categoryValue = $meta['Category'] ?: 'Research';
-
-            // Track category options dynamically so the filter dropdown has valid choices.
-            if (!in_array($categoryValue, $categoryOptions, true)) {
-                $categoryOptions[] = $categoryValue;
+    if (is_dir($targetDir)) {
+        foreach (scandir($targetDir) as $item) {
+            if ($item === '.' || $item === '..' || str_ends_with($item, '.meta')) {
+                continue;
             }
 
-            $fileEntries[] = [
-                'name' => $meta['Title'] ?: $item,
-                'authors' => $meta['Authors'] ?: 'Unknown',
-                'department' => $departmentCode,
-                'department_code' => $departmentCode,
-                'category' => $categoryValue,
-                'file' => $item,
-                'uploaded' => filemtime($path),
-            ];
+            $path = $targetDir . $item;
+            
+            if (is_file($path)) {
+                $meta = readMeta($path);
+                $departmentCode = $meta['Department'] ?: 'Unknown';
+                $categoryValue = $meta['Category'] ?: 'Research';
+
+                if (!in_array($categoryValue, $categoryOptions, true)) {
+                    $categoryOptions[] = $categoryValue;
+                }
+
+                $fileEntries[] = [
+                    'name' => $meta['Title'] ?: $item,
+                    'authors' => $meta['Authors'] ?: 'Unknown',
+                    'department' => $departmentCode,
+                    'department_code' => $departmentCode,
+                    'category' => $categoryValue,
+                    'file' => $item,
+                    'uploaded' => filemtime($path),
+                ];
+            }
         }
     }
 
-    // 5. sort the files so newest uploads appear first
+    return $fileEntries;
+}
+
+// sortFilesByDate() sorts files by upload timestamp, newest first.
+function sortFilesByDate(&$fileEntries) {
     usort($fileEntries, function ($a, $b) {
         return $b['uploaded'] <=> $a['uploaded'];
     });
+}
 
+// filterByDepartment() removes entries that don't match the selected department.
+function filterByDepartment(&$fileEntries, $selectedDepartment) {
     if ($selectedDepartment !== 'ALL') {
         $fileEntries = array_values(array_filter($fileEntries, function ($entry) use ($selectedDepartment) {
             return $entry['department_code'] === $selectedDepartment;
         }));
     }
+}
 
+// filterByCategory() removes entries that don't match the selected category.
+function filterByCategory(&$fileEntries, $selectedCategory) {
     if ($selectedCategory !== '') {
         $fileEntries = array_values(array_filter($fileEntries, function ($entry) use ($selectedCategory) {
             return $entry['category'] === $selectedCategory;
         }));
     }
+}
 
+// filterBySearchTerm() searches title, authors, department, category, and filename.
+function filterBySearchTerm(&$fileEntries, $searchTerm) {
     if ($searchTerm !== '') {
         $searchTerm = mb_strtolower($searchTerm, 'UTF-8');
         $fileEntries = array_values(array_filter($fileEntries, function ($entry) use ($searchTerm) {
-            $haystack = mb_strtolower($entry['name'] . ' ' . $entry['authors'] . ' ' . $entry['department'] . ' ' . $entry['category'] . ' ' . $entry['file'], 'UTF-8');
+            $haystack = mb_strtolower(
+                $entry['name'] . ' ' . 
+                $entry['authors'] . ' ' . 
+                $entry['department'] . ' ' . 
+                $entry['category'] . ' ' . 
+                $entry['file'], 
+                'UTF-8'
+            );
             return str_contains($haystack, $searchTerm);
         }));
     }
 }
+
+// Build and filter the file list.
+$fileEntries = scanAndBuildFileEntries($categoryOptions);
+sortFilesByDate($fileEntries);
+filterByDepartment($fileEntries, $selectedDepartment);
+filterByCategory($fileEntries, $selectedCategory);
+filterBySearchTerm($fileEntries, $searchTerm);
 
 $categoryOptions = array_unique($categoryOptions);
 sort($categoryOptions, SORT_STRING);

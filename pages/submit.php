@@ -1,4 +1,18 @@
 <?php
+    // buildMetadataString() constructs the metadata text from form POST data.
+    // This metadata is later read by home.php's readMeta() function.
+    function buildMetadataString() {
+        return 
+            "Title=" . $_POST['TitleTXT'] . "\n" .
+            "Authors=" . $_POST['AuthorsTXT'] . "\n" .
+            "Department=" . $_POST['DepartmentTXT'] . "\n" .
+            "Adviser=" . $_POST['AdviserTXT'] . "\n" .
+            "Keywords=" . $_POST['KeywordsTXT'] . "\n" .
+            "Year=" . $_POST['ReleaseTXT'] . "\n" .
+            "Course=" . $_POST['CourseTXT'] . "\n" .
+            "Category=" . $_POST['CategoryTXT'] . "\n";
+    }
+
     // uploadfile() handles the submitted research paper upload and saves metadata.
     // It reads values from $_FILES and $_POST, writes the file into FileFolder, and
     // creates a .meta file containing the form metadata.
@@ -19,17 +33,8 @@
             // When the file upload succeeds, create a metadata file next to it.
             $metaFile = $destFolder . ".meta";
 
-            // Build the mssetadata text from the submitted form fields.
-            // These values are later read by home.php's readMeta() function.
-            $metadata =
-                "Title=" . $_POST['TitleTXT'] . "\n" .
-                "Authors=" . $_POST['AuthorsTXT'] . "\n" .
-                "Department=" . $_POST['DepartmentTXT'] . "\n" .
-                "Adviser=" . $_POST['AdviserTXT'] . "\n" .
-                "Keywords=" . $_POST['KeywordsTXT'] . "\n" .
-                "Year=" . $_POST['ReleaseTXT'] . "\n" .
-                "Course=" . $_POST['CourseTXT'] . "\n" .
-                "Category=" . $_POST['CategoryTXT'] . "\n";
+            // Build the metadata text from the submitted form fields.
+            $metadata = buildMetadataString();
 
             // Save the metadata string into a .meta file alongside the uploaded document.
             file_put_contents($metaFile, $metadata);
@@ -42,8 +47,11 @@
         }
     }
 
-    
-
+    // Only call uploadfile() when the submit button named Upload is present.
+    // This prevents the upload logic from running when the page is first loaded.
+    if(isset($_POST['Upload'])){
+        uploadfile();
+    }
     
 ?>
 <div class="panel">
