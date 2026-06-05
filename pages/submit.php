@@ -1,7 +1,4 @@
 <?php
-    // buildMetadataString() constructs the metadata text from form POST data.
-    // This metadata is later read by home.php's readMeta() function.
-    //??Creates an associative array to later convert into suedo meta data for every upload.
     function buildMetadataString() {
         return 
             "Title=" . $_POST['TitleTXT'] . "\n" .
@@ -13,40 +10,28 @@
             "Course=" . $_POST['CourseTXT'] . "\n" .
             "Category=" . $_POST['CategoryTXT'] . "\n";
     }
-    //?? handles upload and creating a new file based on the file name of the uploaded text file but with meta at the end of the name, stored inside are metadata of the file.
     function uploadfile(){
-        // Path to the folder where uploaded documents are stored.
         $targetDir = "FileFolder/";
                     
-        // Use the original filename and combine it with the upload folder path.
-        // basename() prevents directory traversal attacks in the filename.
         $destFolder = $targetDir . basename($_FILES['docFile']['name']);
 
-        // Temporary location of the uploaded file
         $tempfile = $_FILES['docFile']['tmp_name'];
 
-        // Move the uploaded file from the temporary folder into FileFolder.
         if(move_uploaded_file($tempfile, $destFolder)){
 
-            // When the file upload succeeds, create a metadata file next to it.
             $metaFile = $destFolder . ".meta";
 
-            // Build the metadata text from the submitted form fields.
             $metadata = buildMetadataString();
 
-            // Save the metadata string into a .meta file alongside the uploaded document.
             file_put_contents($metaFile, $metadata);
 
             echo "Your paper has been uploaded successfully!";
 
         } else {
-            // If file upload fails, show a user-friendly message.
             echo "Trying to upload your paper again. Make sure the file is not too large and is in an accepted format.";
         }
     }
 
-    // Only call uploadfile() when the submit button named Upload is present.
-    // This prevents the upload logic from running when the page is first loaded.
     if(isset($_POST['Upload'])){
         uploadfile();
     }
@@ -55,7 +40,6 @@
 <div class="panel">
     <div class="panel-title">Submit Research Paper</div>
     <p>Upload your paper with all metadata attached.</p>
-    <!-- Form collects paper metadata and the file itself for upload -->
     <form action="" method="post" enctype="multipart/form-data">
         <div class="submit-grid">
             <label>

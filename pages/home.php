@@ -7,10 +7,8 @@ $selectedCategory = $_GET['category'] ?? '';
 $departmentOptions = ['ALL', 'CBA', 'CENG', 'CCSS', 'CAS', 'CFAD', 'LAW', 'DENT', 'GRAD'];
 $categoryOptions = [];
 
-// readMeta() loads metadata from a .meta file for a given document.
 function readMeta($filePath) {
 
-    // Default metadata values if no .meta file exists.
     $meta = [
         "Title" => basename($filePath),
         "Authors" => "",
@@ -20,13 +18,11 @@ function readMeta($filePath) {
         "Category" => ""
     ];
 
-    // The metadata file uses the uploaded filename plus .meta extension.
     $metaFile = $filePath . ".meta";
 
     if (file_exists($metaFile)) {
         $lines = file($metaFile, FILE_IGNORE_NEW_LINES);
 
-        // Parse each line in the form key=value.
         foreach ($lines as $line) {
             [$key, $value] = explode("=", $line, 2);
             $meta[$key] = $value;
@@ -36,8 +32,6 @@ function readMeta($filePath) {
     return $meta;
 }
 
-// scanAndBuildFileEntries() scans the FileFolder directory and builds the initial file list.
-// Collects metadata for each file and tracks available categories.
 function scanAndBuildFileEntries(&$categoryOptions) {
     $targetDir = dirname(__DIR__) . '/FileFolder/';
     $fileEntries = [];
@@ -75,7 +69,6 @@ function scanAndBuildFileEntries(&$categoryOptions) {
     return $fileEntries;
 }
 
-// sortFilesByDate() sorts files by upload timestamp, newest first.
 function sortFilesByDate(&$fileEntries) {
     usort($fileEntries, function ($a, $b) {
         return $b['uploaded'] <=> $a['uploaded'];
@@ -83,49 +76,39 @@ function sortFilesByDate(&$fileEntries) {
 }
 
 function filterByDepartment(&$fileEntries, $selectedDepartment) {
-    // only filter if the user selected a specific department
     if ($selectedDepartment !== 'ALL') {
-        $matchingEntries = []; // create a clean, empty basket
+        $matchingEntries = [];
         
-        // look through every single file entry
         foreach ($fileEntries as $entry) {
-            // if the file matches the department, put it in the basket
             if ($entry['department_code'] === $selectedDepartment) {
                 $matchingEntries[] = $entry;
             }
         }
         
-        // replace the old list with our filtered basket
         $fileEntries = $matchingEntries;
     }
 }
 
 function filterByCategory(&$fileEntries, $selectedCategory) {
-    // only filter if a category was actually chosen
     if ($selectedCategory !== '') {
-        $matchingEntries = []; // create a clean, empty basket
+        $matchingEntries = [];
         
-        // look through every single file entry
         foreach ($fileEntries as $entry) {
-            // if the file matches the category, put it in the basket
             if ($entry['category'] === $selectedCategory) {
                 $matchingEntries[] = $entry;
             }
         }
         
-        // replace the old list with our filtered basket
         $fileEntries = $matchingEntries;
     }
 }
 
 function filterBySearchTerm(&$fileEntries, $searchTerm) {
-    // only filter if the user typed something in the search bar
     if ($searchTerm !== '') {
         $searchFor = mb_strtolower($searchTerm, 'UTF-8');
-        $matchingEntries = []; // create a clean, empty basket
+        $matchingEntries = [];
         
         foreach ($fileEntries as $entry) {
-            // combine all data fields into one single string to scan through
             $textToScan = mb_strtolower(
                 $entry['name'] . ' ' . 
                 $entry['authors'] . ' ' . 
@@ -135,18 +118,15 @@ function filterBySearchTerm(&$fileEntries, $searchTerm) {
                 'UTF-8'
             );
             
-            // if the search term exists inside our text pool, put it in the basket
             if (str_contains($textToScan, $searchFor)) {
                 $matchingEntries[] = $entry;
             }
         }
         
-        // replace the old list with our filtered basket
         $fileEntries = $matchingEntries;
     }
 }
 
-// Build and filter the file list.
 $fileEntries = scanAndBuildFileEntries($categoryOptions);
 sortFilesByDate($fileEntries);
 filterByDepartment($fileEntries, $selectedDepartment);
@@ -187,7 +167,6 @@ sort($categoryOptions, SORT_STRING);
     <?php endif; ?>
 
     <?php if (!empty($fileEntries)): ?>
-        <!-- Table shows uploaded research files, department, upload date, and download link -->
         <table class="file-table">
             <thead>
                 <tr>
